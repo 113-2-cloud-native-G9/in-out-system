@@ -1,0 +1,23 @@
+Flask==3.0.2
+Flask-RESTful==0.3.10       # REST API 支援
+Flask-Cors==4.0.0           # 處理 CORS 問題
+Flask-JWT-Extended==4.6.0   # JWT Token 驗證
+Flask-SQLAlchemy==3.1.1     # ORM 連接 MySQL
+
+# MySQL 連線支援
+mysql-connector-python==8.3.0  # 連接 MySQL
+PyMySQL==1.1.0                # 替代 MySQL 官方驅動
+
+# 伺服器運行 (部署用)
+gunicorn==22.0.0  # WSGI 伺服器，讓 Flask 部署到 GCP
+
+# 環境變數管理
+python-dotenv==1.0.1  # 用來管理 .env 環境變數
+
+# 單元測試
+pytest==8.2.0        # Pytest 測試框架
+pytest-mock==3.14.0  # 測試時用 mock
+requests==2.31.0     # 測試 API 請求
+
+cryptography==42.0.5   # 加密處理
+Werkzeug==3.0.1        # Flask 內部運行工具
