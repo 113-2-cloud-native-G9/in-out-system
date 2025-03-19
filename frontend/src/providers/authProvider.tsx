@@ -1,6 +1,7 @@
 // src/providers/UserProvider.tsx
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { User } from "@/types";
+import { mockUser } from "@/mocks/user";
 
 // 用戶狀態接口
 interface UserState {
@@ -14,14 +15,6 @@ interface UserState {
 //     isAuthenticated: false,
 // };
 
-// 模擬用戶
-const mockUser: User = {
-    id: 1,
-    name: "John Doe",
-    email: "",
-    role: "admin",
-    avatar: "",
-};
 
 const mockUserState: UserState = {
     user: mockUser,

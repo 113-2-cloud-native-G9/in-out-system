@@ -8,12 +8,12 @@ export function UserHead({ user }: { user: User | null }) {
     return (
         <div className="flex items-center space-x-2">
             <Avatar>
-                <AvatarFallback>CN</AvatarFallback>
-                <AvatarImage src={user.avatar} />
+                <AvatarFallback>{user.first_name[0]}{user.last_name[0]}</AvatarFallback>
+                <AvatarImage src={user.employee_icon} />
             </Avatar>
             <div>
-                <h2 className="text-lg font-semibold">{user.name}</h2>
-                <p className="text-sm text-gray-500">{user.role}</p>
+                <h2 className="text-lg text-primary-foreground font-semibold">{user.first_name} {user.last_name}</h2>
+                <p className="text-sm text-primary-foreground">{user.employee_id}</p>
             </div>
         </div>
     );
