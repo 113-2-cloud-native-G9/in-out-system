@@ -7,6 +7,8 @@ import { mockUser } from "@/mocks/user";
 interface UserState {
     user: User | null;
     isAuthenticated: boolean;
+    login: (user: User) => void;
+    logout: () => void;
 }
 
 // 初始化狀態
@@ -19,10 +21,12 @@ interface UserState {
 const mockUserState: UserState = {
     user: mockUser,
     isAuthenticated: true,
+    login: () => {},
+    logout: () => {}
 };
 
 // 建立 Context
-const UserContext = createContext<UserState | undefined>(undefined);
+const UserContext = createContext<UserState>(mockUserState);
 
 // Provider 組件
 interface UserProviderProps {
@@ -37,6 +41,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         setUserState({
             user,
             isAuthenticated: true,
+            login,
+            logout
         });
     };
 
@@ -45,12 +51,14 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         setUserState({
             user: null,
             isAuthenticated: false,
+            login,
+            logout
         });
     };
 
     return (
         <UserContext.Provider
-            value={{ ...userState, login, logout } as UserState}
+            value={{ ...userState, login, logout }}
         >
             {children}
         </UserContext.Provider>
