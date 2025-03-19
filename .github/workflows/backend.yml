@@ -1,62 +1,43 @@
-#這邊我弄好github cicd + gcp Cloud Run or gcp cicd + gcp Cloud Run再改
-
-name: Deploy Flask Backend to GCP
+name: Deploy to GCP Cloud Run
 
 on:
   push:
     branches:
-      - main  # 當 push 到 main 時觸發 CI/CD
+      - main  # 觸發部署的分支
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}  # 這裡會自動讀取 GCP_PROJECT_ID
+  SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
+  REGION: ${{ secrets.GCP_REGION }}
+  REPO: asia-east1-docker.pkg.dev  # Artifact Registry 位置
 
 jobs:
-  build-and-deploy:
+  deploy:
+    name: Deploy to Cloud Run
     runs-on: ubuntu-latest
 
     steps:
-      # 檢出 (Check out) 代碼
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 設定 Python 環境（如果你需要在 CI/CD 運行 Flask 測試）
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r backend/requirements.txt
-
-      # 執行測試（可選）
-      - name: Run Tests
-        run: |
-          cd backend
-          pytest || echo "Tests failed, but continuing..."
-
-      #  GCP 認證（透過 GitHub Secrets）
-      - name: Authenticate to Google Cloud
+      - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
-      # 設定 gcloud CLI
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker $REPO
 
-      # 構建並推送 Docker 映像檔到 Google Container Registry (GCR)
       - name: Build and Push Docker Image
         run: |
-          gcloud auth configure-docker
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-backend:latest backend/
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-backend:latest
+          docker build -t $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA .
+          docker push $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA
 
-      # 部署到 Cloud Run
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy flask-backend \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-backend:latest \
+          gcloud run deploy $SERVICE \
+            --image $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA \
+            --region $REGION \
             --platform managed \
-            --region asia-east1 \
             --allow-unauthenticated
