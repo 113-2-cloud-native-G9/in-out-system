@@ -36,7 +36,7 @@ export function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden antialiased">
+        <div className="min-h-screen flex flex-col items-center justify-center  relative overflow-hidden antialiased">
 
 
             {/* 登入卡片 */}
@@ -73,7 +73,7 @@ export function LoginPage() {
                                     type="text"
                                     value={employeeId}
                                     onChange={(e) => setEmployeeId(e.target.value)}
-                                    className="pl-10 bg-background/80 border-input/50 transition-colors focus:border-primary/50 font-medium"
+                                    className="pl-10 bg-background border-secondary/50 transition-colors focus:border-primary/50 font-medium"
                                     placeholder="Enter your ID"
                                 />
                             </div>
@@ -90,7 +90,7 @@ export function LoginPage() {
                                     type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="pl-10 bg-background/80 border-input/50 transition-colors focus:border-primary/50 font-medium"
+                                    className="pl-10 bg-background/50 border-secondary/50 transition-colors focus:border-primary/50 font-medium"
                                     placeholder="Enter your password"
                                 />
                                 <Button
@@ -111,7 +111,7 @@ export function LoginPage() {
 
                         <Button
                             type="submit"
-                            className="w-full py-6 text-base font-medium tracking-wide bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg"
+                            className="w-full py-6 text-base font-medium tracking-wide bg-accent text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg"
                         >
                             SIGN IN
                         </Button>
@@ -120,7 +120,7 @@ export function LoginPage() {
                             <Button
                                 variant="link"
                                 type="button"
-                                className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
+                                className="text-sm text-foreground hover:text-primary transition-colors font-medium"
                                 onClick={() => navigate('/forgot-password')}
                             >
                                 Forgot Password?

@@ -12,8 +12,8 @@ export function UserHead({ user }: { user: User | null }) {
                 <AvatarImage src={user.employee_icon} />
             </Avatar>
             <div>
-                <h2 className="text-lg text-primary-foreground font-semibold">{user.first_name} {user.last_name}</h2>
-                <p className="text-sm text-primary-foreground">{user.employee_id}</p>
+                <h2 className="text-lg text-foreground font-semibold">{user.first_name} {user.last_name}</h2>
+                <p className="text-sm text-foreground">{user.employee_id}</p>
             </div>
         </div>
     );

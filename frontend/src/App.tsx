@@ -5,7 +5,7 @@ import { routes, menuItems } from "@/config/routes";
 function App() {
     return (
         <Router>
-            <div className="min-h-screen bg-background">
+            <div className="min-h-screen bg-card">
                 <Menu className="fixed top-0 left-0 right-0 z-50" items={menuItems} />
                 <div className="container mx-auto p-4 mt-16">
                     <Routes>

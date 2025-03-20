@@ -20,23 +20,23 @@ export function Menu({ className, items = [] }: MenuProps) {
     const { user } = useUser();
 
     return (
-        <nav className={`bg-foreground text-foreground p-2 flex items-center justify-between ${className}`}>
+        <nav className={`bg-background text-foreground p-2 flex items-center justify-between ${className}`}>
             <div className="flex items-center space-x-8">
                 <div className="flex items-center space-x-2">
                     <img src="../../public/vite.svg" alt="Tiimi Logo" className="h-8 w-8" />
-                    <span className="font-bold text-xl text-primary-foreground">Yoyo點點名</span>
+                    <span className="font-bold text-xl text-foreground">Yoyo點點名</span>
                 </div>
-                <span className="font-semibold text-primary-foreground">HR In & Out System</span>
+                <span className="font-semibold text-foreground">HR In & Out System</span>
                 <div className="flex space-x-1">
                     {items.map((item) => (
                         <Link
                             key={item.name}
                             to={item.path}
-                            className=" text-primary-foreground px-3 py-1 rounded-full text-sm font-medium hover:text-chart-3 hover:bg-accent transition duration-150 ease-in-out"
+                            className=" text-foreground px-3 py-1 rounded-full text-sm font-medium hover:bg-popover transition duration-150 ease-in-out"
                         >
                             {item.name}
                             {item.count !== null && (
-                                <span className="ml-2 px-1.5 py-0.5 text-xs bg-destructive text-primary-foreground rounded-full">
+                                <span className="ml-2 px-1.5 py-0.5 text-xs bg-foreground text-primary-foreground rounded-full">
                                     {item.count}
                                 </span>
                             )}
