@@ -4,7 +4,7 @@ import LoginPage from "@/pages/LoginPage";
 import AttendancePage from "@/pages/AttendancePage";
 import DashboardPage from "@/pages/DashboardPage";
 import OrganizationManagementPage from "@/pages/OrganizationManagementPage";
-import EmployeeListPage from '@/pages/EmployeeListPage';
+import EmployeeListPage from '@/pages/EmployeeListSubPage';
 
 type AppRoute = Omit<RouteObject, 'path'> & {
   path: string;
@@ -35,12 +35,6 @@ export const routes: AppRoute[] = [
     element: <OrganizationManagementPage />,
     name: 'Organization Management',
     showInMenu: true
-  },
-  {
-    path: '/employee-list',
-    element: <EmployeeListPage />,
-    name: 'Employee List',
-    showInMenu: false
   },
   {
     path: '/',
