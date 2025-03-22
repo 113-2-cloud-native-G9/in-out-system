@@ -40,7 +40,7 @@ export function LoginPage() {
 
 
             {/* 登入卡片 */}
-            <Card className="relative w-[380px] overflow-hidden border-none bg-card/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/50">
+            <Card className="relative w-96 overflow-hidden border-none bg-card/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/50">
                 <CardHeader className="space-y-1">
                     <div className="flex items-center justify-center">
                         <div className="p-3 rounded-2xl bg-background/80">
@@ -131,10 +131,6 @@ export function LoginPage() {
                 </CardContent>
             </Card>
 
-            {/* 頁腳 */}
-            <div className="absolute bottom-4 text-center text-sm text-muted-foreground/80 font-medium tracking-wide">
-                © 2024 TIIMI. All rights reserved.
-            </div>
         </div>
     );
 }
