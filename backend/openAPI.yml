@@ -7,7 +7,7 @@ servers:
     description: Local development server
   # 侯樂聲記得更新
   - url: https://api.server.production/v1
-  - description: Production server
+    description: Production server
 
 paths:
   /api/v1/employees:
