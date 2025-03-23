@@ -3,7 +3,7 @@ info:
   title: Yoyo點點名 API Test
   version: '1.0'
 servers:
-  - url: http://127.0.0.1:5000
+  - url: http://127.0.0.1:8080
     description: Local development server
   # 侯樂聲記得更新
   - url: https://api.server.production/v1
