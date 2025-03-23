@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"; 
-
+import EditEmployeeCard from "@/components/custom/EditEmployeeCard ";
 // Define employee type
 interface Employee {
   id: string;
@@ -43,10 +43,11 @@ const EmployeeListPage = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('Active');
   const [selectedField, setSelectedField] = useState<FieldFilterOption>('all');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
-  const [editingEmployee, setEditingEmployee] = useState<number | null>(null);
+  const [editingEmployee, setEditingEmployee] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [showEditCard, setShowEditCard] = useState<boolean>(false);
   const itemsPerPage: number = 10;
 
   // Example employee data
@@ -114,9 +115,15 @@ const EmployeeListPage = () => {
     }
   };
 
+  const closeEditForm = () => {
+    setEditingEmployee(null);
+    setShowEditCard(false);
+  };
+
   // Handle the click of the edit icon
-  const handleEdit = (employeeId: number): void => {
+  const handleEdit = (employeeId: string): void => {
     setEditingEmployee(employeeId);
+    setShowEditCard(true);
     console.log(`Editing employee with ID: ${employeeId}`);
   };
 
@@ -177,7 +184,7 @@ const EmployeeListPage = () => {
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Filter by field" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className='bg-card'>
               <SelectItem value="all">All Fields</SelectItem>
               <SelectItem value="name">Name</SelectItem>
               <SelectItem value="role">Role</SelectItem>
@@ -195,7 +202,7 @@ const EmployeeListPage = () => {
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Department" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className='bg-card'>
               {departments.map((dept) => (
                 <SelectItem key={dept} value={dept}>
                   {dept === 'all' ? 'All Departments' : dept}
@@ -212,7 +219,7 @@ const EmployeeListPage = () => {
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className='bg-card'>
               <SelectItem value="Active">Active</SelectItem>
               <SelectItem value="Inactive">Inactive</SelectItem>
               <SelectItem value="On Leave">On Leave</SelectItem>
@@ -282,7 +289,7 @@ const EmployeeListPage = () => {
                 onClick={() => handleSort('joined')}
               >
                 <div className="flex items-center">
-                  <Calendar size={14} className="mr-2" /> Contact {renderSortIcon('joined')}
+                  <Calendar size={14} className="mr-2" /> Jonined {renderSortIcon('joined')}
                 </div>
               </TableHead>
               <TableHead className="px-4 py-2">
@@ -292,7 +299,7 @@ const EmployeeListPage = () => {
           </TableHeader>
           <TableBody>
             {currentEmployees.length > 0 ? (
-              currentEmployees.map((employee, index) => (
+              currentEmployees.map((employee) => (
                 <TableRow key={employee.id} className="hover:bg-chart-1/20">
                   <TableCell className="px-4 py-2">{employee.id}</TableCell>
                   <TableCell className="px-4 py-2">{employee.name}</TableCell>
@@ -305,7 +312,7 @@ const EmployeeListPage = () => {
                     <Edit
                       size={16}
                       className="text-secondary cursor-pointer hover:text-primary"
-                      onClick={() => handleEdit(index)}
+                      onClick={() => handleEdit(employee.id)}
                     />
                   </TableCell>
                 </TableRow>
@@ -361,7 +368,14 @@ const EmployeeListPage = () => {
         >
           Next
         </Button>
+        
       </div>
+      {/* Edit Employee Card (Temporarily Blank) */}
+      {showEditCard && editingEmployee && (
+        <EditEmployeeCard 
+          closeForm={closeEditForm} 
+        />
+      )}
     </div>
   );
 };

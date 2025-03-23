@@ -11,6 +11,7 @@ export interface User {
     organization_name: string;
     status: "active" | "inactive";
     employee_icon: string;
+    hire_date: string;
 }
 
 export type UserState = "loggedIn" | "loggedOut" | "loading";
