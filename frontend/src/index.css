@@ -45,7 +45,7 @@
     --card-foreground: #F9FAFB; /* Light text on dark cards */
     --popover: #4B5563; /* Dark popover */
     --popover-foreground: #F9FAFB; /* Light text on popover */
-    --primary: #2563EB; /* Blue for primary elements in dark mode */
+    --primary: #4c85ff; /* Blue for primary elements in dark mode */
     --primary-foreground: #FFFFFF; /* White text on primary elements */
     --secondary: #D1D5DB; /* Light gray for secondary elements */
     --secondary-foreground: #1F2937; /* Dark text on secondary elements */
@@ -57,7 +57,7 @@
     --border: #6B7280; /* Dark border */
     --input: #374151; /* Dark input background */
     --ring: #3B82F6; /* Blue ring color for focus or hover */
-    --chart-1: #F59E0B; /* Golden color for chart 1 */
+    --chart-1: #ffd606; /* Golden color for chart 1 */
     --chart-2: #9333EA; /* Purple color for chart 2 */
     --chart-3: #34D399; /* Light green for chart 3 */
     --chart-4: #3B82F6; /* Blue for chart 4 */
