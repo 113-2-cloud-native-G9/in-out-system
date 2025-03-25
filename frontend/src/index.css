@@ -5,71 +5,133 @@
 
 :root {
     --radius: 0.625rem;
-    --background: #F3F4F6; /* Light background */
-    --foreground: #1F2937; /* Dark text */
-    --card: #FFFFFF; /* White for cards */
-    --card-foreground: #1F2937; /* Dark text on cards */
-    --popover: #dadee2; /* Popover background */
-    --popover-foreground: #1F2937; /* Popover text */
-    --primary: #2563EB; /* Blue for primary elements */
-    --primary-foreground: #FFFFFF; /* White text on primary elements */
-    --secondary: #a4aab4; /* Light gray for secondary elements */
-    --secondary-foreground: #1F2937; /* Dark text on secondary elements */
-    --muted: #9CA3AF; /* Muted gray for less emphasis */
-    --muted-foreground: #1F2937; /* Dark text on muted elements */
-    --accent: #10B981; /* Green for accent elements */
-    --accent-foreground: #FFFFFF; /* White text on accent elements */
-    --destructive: #EF4444; /* Red for destructive actions */
-    --border: #E5E7EB; /* Light border color */
-    --input: #FFFFFF; /* Input background */
-    --ring: #60A5FA; /* Ring for focus or hover states */
-    --chart-1: #F59E0B; /* Golden color for chart 1 */
-    --chart-2: #9333EA; /* Purple color for chart 2 */
-    --chart-3: #34D399; /* Light green for chart 3 */
-    --chart-4: #3B82F6; /* Blue color for chart 4 */
-    --chart-5: #F472B6; /* Pink for chart 5 */
-    --sidebar: #1F2937; /* Dark sidebar */
-    --sidebar-foreground: #FFFFFF; /* White text in sidebar */
-    --sidebar-primary: #2563EB; /* Blue for sidebar primary elements */
-    --sidebar-primary-foreground: #FFFFFF; /* White text on primary sidebar elements */
-    --sidebar-accent: #10B981; /* Green for sidebar accent */
-    --sidebar-accent-foreground: #FFFFFF; /* White text on sidebar accent */
-    --sidebar-border: #E5E7EB; /* Light border in sidebar */
-    --sidebar-ring: #60A5FA; /* Ring color for sidebar focus */
+    --background: #F3F4F6;
+    /* Light background */
+    --foreground: #1F2937;
+    /* Dark text */
+    --card: #FFFFFF;
+    /* White for cards */
+    --card-foreground: #1F2937;
+    /* Dark text on cards */
+    --popover: #dadee2;
+    /* Popover background */
+    --popover-foreground: #1F2937;
+    /* Popover text */
+    --primary: #2563EB;
+    /* Blue for primary elements */
+    --primary-foreground: #FFFFFF;
+    /* White text on primary elements */
+    --secondary: #a4aab4;
+    /* Light gray for secondary elements */
+    --secondary-foreground: #1F2937;
+    /* Dark text on secondary elements */
+    --muted: #9CA3AF;
+    /* Muted gray for less emphasis */
+    --muted-foreground: #1F2937;
+    /* Dark text on muted elements */
+    --accent: #10B981;
+    /* Green for accent elements */
+    --accent-foreground: #FFFFFF;
+    /* White text on accent elements */
+    --destructive: #EF4444;
+    /* Red for destructive actions */
+    --border: #E5E7EB;
+    /* Light border color */
+    --input: #FFFFFF;
+    /* Input background */
+    --ring: #60A5FA;
+    /* Ring for focus or hover states */
+    --chart-1: #F59E0B;
+    /* Golden color for chart 1 */
+    --chart-2: #9333EA;
+    /* Purple color for chart 2 */
+    --chart-3: #34D399;
+    /* Light green for chart 3 */
+    --chart-4: #3B82F6;
+    /* Blue color for chart 4 */
+    --chart-5: #F472B6;
+    /* Pink for chart 5 */
+    --sidebar: #1F2937;
+    /* Dark sidebar */
+    --sidebar-foreground: #FFFFFF;
+    /* White text in sidebar */
+    --sidebar-primary: #2563EB;
+    /* Blue for sidebar primary elements */
+    --sidebar-primary-foreground: #FFFFFF;
+    /* White text on primary sidebar elements */
+    --sidebar-accent: #10B981;
+    /* Green for sidebar accent */
+    --sidebar-accent-foreground: #FFFFFF;
+    /* White text on sidebar accent */
+    --sidebar-border: #E5E7EB;
+    /* Light border in sidebar */
+    --sidebar-ring: #60A5FA;
+    /* Ring color for sidebar focus */
 }
 
 .dark {
-    --background: #1F2937; /* Dark background */
-    --foreground: #F9FAFB; /* Light text */
-    --card: #374151; /* Dark cards */
-    --card-foreground: #F9FAFB; /* Light text on dark cards */
-    --popover: #4B5563; /* Dark popover */
-    --popover-foreground: #F9FAFB; /* Light text on popover */
-    --primary: #4c85ff; /* Blue for primary elements in dark mode */
-    --primary-foreground: #FFFFFF; /* White text on primary elements */
-    --secondary: #D1D5DB; /* Light gray for secondary elements */
-    --secondary-foreground: #1F2937; /* Dark text on secondary elements */
-    --muted: #9CA3AF; /* Muted gray in dark mode */
-    --muted-foreground: #F9FAFB; /* Light text on muted elements */
-    --accent: #10B981; /* Green for accent in dark mode */
-    --accent-foreground: #FFFFFF; /* White text on accent elements */
-    --destructive: #EF4444; /* Red for destructive actions */
-    --border: #6B7280; /* Dark border */
-    --input: #374151; /* Dark input background */
-    --ring: #3B82F6; /* Blue ring color for focus or hover */
-    --chart-1: #ffd606; /* Golden color for chart 1 */
-    --chart-2: #9333EA; /* Purple color for chart 2 */
-    --chart-3: #34D399; /* Light green for chart 3 */
-    --chart-4: #3B82F6; /* Blue for chart 4 */
-    --chart-5: #F472B6; /* Pink for chart 5 */
-    --sidebar: #1F2937; /* Dark sidebar */
-    --sidebar-foreground: #F9FAFB; /* Light text in sidebar */
-    --sidebar-primary: #5a88ea; /* Blue for sidebar primary elements */
-    --sidebar-primary-foreground: #FFFFFF; /* White text on primary sidebar elements */
-    --sidebar-accent: #10B981; /* Green for sidebar accent */
-    --sidebar-accent-foreground: #FFFFFF; /* White text on sidebar accent */
-    --sidebar-border: #6B7280; /* Dark border in sidebar */
-    --sidebar-ring: #3B82F6; /* Ring color for sidebar focus */
+    --background: #1F2937;
+    /* Dark background */
+    --foreground: #F9FAFB;
+    /* Light text */
+    --card: #374151;
+    /* Dark cards */
+    --card-foreground: #F9FAFB;
+    /* Light text on dark cards */
+    --popover: #4B5563;
+    /* Dark popover */
+    --popover-foreground: #F9FAFB;
+    /* Light text on popover */
+    --primary: #3872f0;
+    /* Blue for primary elements in dark mode */
+    --primary-foreground: #FFFFFF;
+    /* White text on primary elements */
+    --secondary: #D1D5DB;
+    /* Light gray for secondary elements */
+    --secondary-foreground: #1F2937;
+    /* Dark text on secondary elements */
+    --muted: #9CA3AF;
+    /* Muted gray in dark mode */
+    --muted-foreground: #F9FAFB;
+    /* Light text on muted elements */
+    --accent: #058a5d;
+    /* Green for accent in dark mode */
+    --accent-foreground: #FFFFFF;
+    /* White text on accent elements */
+    --destructive: #EF4444;
+    /* Red for destructive actions */
+    --border: #6B7280;
+    /* Dark border */
+    --input: #374151;
+    /* Dark input background */
+    --ring: #3B82F6;
+    /* Blue ring color for focus or hover */
+    --chart-1: #ffd606;
+    /* Golden color for chart 1 */
+    --chart-2: #9333EA;
+    /* Purple color for chart 2 */
+    --chart-3: #34D399;
+    /* Light green for chart 3 */
+    --chart-4: #3B82F6;
+    /* Blue for chart 4 */
+    --chart-5: #F472B6;
+    /* Pink for chart 5 */
+    --sidebar: #1F2937;
+    /* Dark sidebar */
+    --sidebar-foreground: #F9FAFB;
+    /* Light text in sidebar */
+    --sidebar-primary: #5a88ea;
+    /* Blue for sidebar primary elements */
+    --sidebar-primary-foreground: #FFFFFF;
+    /* White text on primary sidebar elements */
+    --sidebar-accent: #10B981;
+    /* Green for sidebar accent */
+    --sidebar-accent-foreground: #FFFFFF;
+    /* White text on sidebar accent */
+    --sidebar-border: #6B7280;
+    /* Dark border in sidebar */
+    --sidebar-ring: #3B82F6;
+    /* Ring color for sidebar focus */
 }
 
 @theme inline {
@@ -116,6 +178,23 @@
     }
 
     body {
-        @apply bg-background text-foreground;
+        @apply bg-card text-foreground font-mono relative top-0 left-0 w-screen max-h-screen;
     }
+
+    ::-webkit-scrollbar-track {
+        background-color: var(--background);
+    }
+
+    ::-webkit-scrollbar {
+        width: 9px;
+        height: 9px;
+        background-color: var(--secondary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 7px;
+        -webkit-box-shadow: inset 0 0 6px var(--secondary);
+        background-color: var(--secondary);
+    }
+
 }

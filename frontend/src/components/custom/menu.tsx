@@ -46,7 +46,7 @@ export function Menu({ className, items = [] }: MenuProps) {
                             <Link
                                 key={item.name}
                                 to={item.path}
-                                className={`text-foreground px-3 py-1 rounded-sm text-sm font-medium hover:bg-popover transition duration-150 ease-in-out ${location.pathname === item.path ? 'bg-popover ' : ''}`}
+                                className={`hover:cursor-pointer text-foreground px-3 py-1 rounded-sm text-sm font-medium hover:bg-popover transition duration-150 ease-in-out ${location.pathname === item.path ? 'bg-popover ' : ''}`}
                             >
                                 {item.name}
                             </Link>

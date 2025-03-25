@@ -9,9 +9,9 @@ export interface User {
     job_title: string;
     organization_id: string;
     organization_name: string;
-    status: "active" | "inactive";
-    employee_icon: string;
+    hire_status: "active" | "inactive" | "onleave";
     hire_date: string;
+    
 }
 
 export type UserState = "loggedIn" | "loggedOut" | "loading";

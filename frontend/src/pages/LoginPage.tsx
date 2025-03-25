@@ -36,10 +36,6 @@ export function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center  relative overflow-hidden antialiased">
-
-
-            {/* 登入卡片 */}
             <Card className="relative w-96 overflow-hidden border-none bg-card/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/50">
                 <CardHeader className="space-y-1">
                     <div className="flex items-center justify-center">
@@ -95,9 +91,9 @@ export function LoginPage() {
                                 />
                                 <Button
                                     type="button"
-                                    variant="ghost"
+                                    variant="default"
                                     size="icon"
-                                    className="absolute right-0 top-0 h-full px-3 hover:bg-accent hover:text-accent-foreground transition-colors"
+                                    className="absolute right-0 top-0 h-full px-3 hover:text-foreground transition-colors "
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
                                     {showPassword ? (
@@ -131,7 +127,6 @@ export function LoginPage() {
                 </CardContent>
             </Card>
 
-        </div>
     );
 }
 
