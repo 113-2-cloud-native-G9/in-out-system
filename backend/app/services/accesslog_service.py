@@ -3,6 +3,7 @@ from app.models.accesslog_model import AccessLogModel
 from app.models.gate_model import GateModel
 from sqlalchemy import func
 from datetime import datetime
+import traceback
 
 class AccessLogService:
     @staticmethod
@@ -44,3 +45,31 @@ class AccessLogService:
             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             return {"error": "Invalid date format. Use YYYY-MM-DD."}, 400
+
+
+    @staticmethod
+    def add_access_logs_by_id_time_gate(employee_id, access_time, gate_id):
+        try:
+            # 若傳入的是字串，轉換成 datetime 物件
+            if isinstance(access_time, str):
+                access_time = datetime.fromisoformat(access_time)
+
+            # 建立資料
+            new_log = AccessLogModel(
+                employee_id=employee_id,
+                access_time=access_time,
+                gate_id=gate_id
+            )
+
+            # 新增進資料庫
+            db.session.add(new_log)
+            db.session.commit()
+
+            return {"message": "Access log added successfully."}, 201
+
+        except ValueError:
+            return {"error": "Invalid date format."}, 400
+        except Exception as e:
+            db.session.rollback()
+            print("ERROR:", traceback.format_exc())
+            return {"error": str(e)}, 500

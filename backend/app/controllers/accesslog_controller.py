@@ -7,7 +7,10 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 class GetEmployeeAccessLog(Resource):
     #@jwt_required()
     def get(self, employee_id):
+       
         date_param = request.args.get("date")  # 從 URL 參數取得日期
+        if not date_param:
+            return {"logs": "datetime are not provided"}, 404
         logs, status = AccessLogService.get_employee_logs_by_employeeid_and_date(employee_id, date_param)
         return {"logs": logs}, status
     
@@ -15,14 +18,18 @@ class GetEmployeeAccessLog(Resource):
 class CreateAccessLog(Resource):
     #@jwt_required()
     def post(self):
-        data = request.get_json()  # 解析請求 JSON 內容
-        if not data:
-            return {"error": "No data provided"}, 400
+        data = request.get_json()
+
+        employee_id = data.get("employee_id")
+        access_time = data.get("access_time")
+        gate_id = data.get("gate_id")
+       
+        if not employee_id or not access_time or not gate_id:
+            return {"error": "Some data are not provided"}, 400
         
-        return {
-            "message": "Access log created successfully",
-            "data": data
-        }, 201
+        _, status = AccessLogService.add_access_logs_by_id_time_gate(employee_id, access_time, gate_id)
+
+        return status
 
 #GET /api/v1/access-logs/{date}
 class GetPersonalAccessLog(Resource):
