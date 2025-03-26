@@ -42,6 +42,7 @@ import {
     ChartLegend,
     ChartLegendContent,
 } from "@/components/ui/chart";
+import AccessLogDialog from "@/components/custom/AccessLogDialog";
 
 type AttendanceStatistics = {
     totalAttendance: number;
@@ -384,55 +385,58 @@ const AttendanceTable = ({ data }: { data: Array<AttendanceRecord> }) => {
             <TableBody>
                 {displayedData.length > 0 ? (
                     displayedData.map((record) => (
-                        <TableRow
+                        <AccessLogDialog
                             key={record.record_id}
-                            className="hover:bg-chart-1/20"
+                            date={record.report_date}
+                            userID={record.record_id}
                         >
-                            <TableCell className="px-4 py-2">
-                                {new Date(
-                                    record.report_date
-                                ).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell className="px-4 py-2">
-                                {record.check_in_time}
-                            </TableCell>
-                            <TableCell className="px-4 py-2">
-                                {record.check_out_time}
-                            </TableCell>
-                            <TableCell className="px-4 py-2">
-                                {record.check_in_gate}
-                            </TableCell>
-                            <TableCell className="px-4 py-2">
-                                {record.check_out_gate}
-                            </TableCell>
-                            <TableCell className="px-4 py-2">
-                                {record.total_stay_hours}
-                            </TableCell>
-                            <TableCell
-                                className={
-                                    record.late_arrival_status ===
-                                    LateArrivalStatus.Late
-                                        ? "px-4 py-2 text-destructive"
-                                        : "px-4 py-2"
-                                }
-                            >
-                                {record.late_arrival_minutes > 0
-                                    ? `${record.late_arrival_status} for ${record.late_arrival_minutes} minutes`
-                                    : record.late_arrival_status}
-                            </TableCell>
-                            <TableCell
-                                className={
-                                    record.early_departure_status ===
-                                    EarlyDepartureStatus.Early
-                                        ? "px-4 py-2 text-destructive"
-                                        : "px-4 py-2"
-                                }
-                            >
-                                {record.early_departure_minutes > 0
-                                    ? `${record.early_departure_status} for ${record.early_departure_minutes} minutes`
-                                    : record.early_departure_status}
-                            </TableCell>
-                        </TableRow>
+                            <TableRow className="hover:bg-chart-1/20 hover:cursor-pointer">
+                                <TableCell className="px-4 py-2">
+                                    {new Date(
+                                        record.report_date
+                                    ).toLocaleDateString()}
+                                </TableCell>
+                                <TableCell className="px-4 py-2">
+                                    {record.check_in_time}
+                                </TableCell>
+                                <TableCell className="px-4 py-2">
+                                    {record.check_out_time}
+                                </TableCell>
+                                <TableCell className="px-4 py-2">
+                                    {record.check_in_gate}
+                                </TableCell>
+                                <TableCell className="px-4 py-2">
+                                    {record.check_out_gate}
+                                </TableCell>
+                                <TableCell className="px-4 py-2">
+                                    {record.total_stay_hours}
+                                </TableCell>
+                                <TableCell
+                                    className={
+                                        record.late_arrival_status ===
+                                        LateArrivalStatus.Late
+                                            ? "px-4 py-2 text-destructive"
+                                            : "px-4 py-2"
+                                    }
+                                >
+                                    {record.late_arrival_minutes > 0
+                                        ? `${record.late_arrival_status} for ${record.late_arrival_minutes} minutes`
+                                        : record.late_arrival_status}
+                                </TableCell>
+                                <TableCell
+                                    className={
+                                        record.early_departure_status ===
+                                        EarlyDepartureStatus.Early
+                                            ? "px-4 py-2 text-destructive"
+                                            : "px-4 py-2"
+                                    }
+                                >
+                                    {record.early_departure_minutes > 0
+                                        ? `${record.early_departure_status} for ${record.early_departure_minutes} minutes`
+                                        : record.early_departure_status}
+                                </TableCell>
+                            </TableRow>
+                        </AccessLogDialog>
                     ))
                 ) : (
                     <TableRow>
