@@ -6,13 +6,18 @@ export function UserHead({ user }: { user: User | null }) {
         return null;
     }
     return (
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 min-w-40">
             <Avatar>
-                <AvatarFallback>{user.first_name[0]}{user.last_name[0]}</AvatarFallback>
+                <AvatarFallback>
+                    {user.first_name[0]}
+                    {user.last_name[0]}
+                </AvatarFallback>
                 <AvatarImage src={user.employee_icon} />
             </Avatar>
             <div>
-                <h2 className="text-lg text-foreground font-semibold">{user.first_name} {user.last_name}</h2>
+                <h2 className="text-lg text-foreground font-semibold">
+                    {user.first_name} {user.last_name}
+                </h2>
                 <p className="text-sm text-foreground">{user.employee_id}</p>
             </div>
         </div>

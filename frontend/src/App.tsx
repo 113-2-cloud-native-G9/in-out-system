@@ -6,14 +6,19 @@ function App() {
     return (
         <Router>
             <>
-                <Menu className="fixed top-0 left-0 right-0 z-50" items={menuItems} />
-                <div className="container mx-auto p-4 pt-20 max-h-dvh">
+                <Menu items={menuItems} />
+                <div
+                    className="container mx-auto p-4 overflow-hidden"
+                    style={{
+                        maxHeight: "calc(100vh - 5rem)",
+                    }}
+                >
                     <Routes>
                         {routes.map((route, index) => (
-                            <Route 
-                                key={index} 
-                                path={route.path} 
-                                element={route.element} 
+                            <Route
+                                key={index}
+                                path={route.path}
+                                element={route.element}
                             />
                         ))}
                     </Routes>
@@ -24,4 +29,3 @@ function App() {
 }
 
 export default App;
-

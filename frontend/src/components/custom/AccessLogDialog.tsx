@@ -132,7 +132,9 @@ const AccessLogDialog = ({ children, date, userID }: AccessLogDialogProps) => {
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="md:min-w-[50rem] min-h-[20rem]">
                 <DialogHeader>
-                    <DialogTitle>Access Logs</DialogTitle>
+                    <DialogTitle>
+                        {new Date(date).toLocaleDateString() + " "}Access Logs
+                    </DialogTitle>
                 </DialogHeader>
                 <Table>
                     <TableHeader>
