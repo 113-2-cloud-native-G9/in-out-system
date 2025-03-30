@@ -8,7 +8,7 @@ from app.models.accesslog_model import AccessLogModel
 from app.models.employee_model import EmployeeModel
 from app.models.gate_model import GateModel
 from app.models.organization_model import OrganizationModel
-from app.models.attendance_model import AttendanceRecordModel # 匯入 db 才能綁定 app
+from app.models.attendance_model import AttendanceRecordModel # 匯入 db 去綁定在 app
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 
@@ -18,7 +18,7 @@ app = Flask(__name__)
 api = Api(app)
 CORS(app)
 
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')  # 要跟產生時一樣
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')  #這是伺服器簽署 JWT token 用的密鑰 到時候前端請求時會用這個解密看看是否合法
 jwt = JWTManager(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (

@@ -24,14 +24,14 @@ class AuthService:
         is_manager_or_not = org.manager_id == employee_id #bool 看他所在的部門表 上面寫的主管是不是他本人
 
         #建立有包含個人基本資訊的 JWT 
-        claims = {
+        user_identity = {
             "employee_id": user.employee_id,
             "is_manager": is_manager_or_not,
             "is_admin": user.is_admin,
             "hire_status": user.hire_status
         }
 
-        jwt_token = create_access_token(identity=user.employee_id, additional_claims=claims)
+        jwt_token = create_access_token(identity=user_identity)
 
         response_data = {
             "jwt_token": jwt_token,
