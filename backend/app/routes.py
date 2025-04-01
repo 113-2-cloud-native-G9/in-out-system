@@ -2,7 +2,7 @@ from flask_restful import Api
 from app.controllers.accesslog_controller import GetEmployeeAccessLog, Create_or_GetPersonalAccessLog
 from app.controllers.auth_controller import Auth_Login
 from app.controllers.organization_controller import OrganizationList, GetOrganization, GetOrganizationTree
-from app.controllers.employee_controller import EmployeeResource
+from app.controllers.employee_controller import EmployeeResource, ResetPasswordResource
 
 BASE_ROUTE = "/api/v1"
 
@@ -16,3 +16,4 @@ def initialize_routes(api: Api):
     api.add_resource(Create_or_GetPersonalAccessLog, f"{BASE_ROUTE}/access-logs") # 模擬逼卡的時候去對資料庫寫入資料 and # 去抓自己的log資料
 
     api.add_resource(EmployeeResource, f"{BASE_ROUTE}/employees/<string:employee_id>")  # 取得單一員工資訊
+    api.add_resource(ResetPasswordResource, f"{BASE_ROUTE}/employees/reset-password")  # 重設密碼
