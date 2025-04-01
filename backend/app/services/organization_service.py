@@ -106,4 +106,4 @@ class OrganizationService:
                 org_dict[parent_id]["children"].append(org)
 
         # 6. 回傳 JSON 格式
-        return {"organizations": root_orgs}, 200
+        return {"organizations": root_orgs}, 200 

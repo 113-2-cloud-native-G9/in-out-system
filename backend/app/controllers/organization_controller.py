@@ -33,8 +33,8 @@ class GetOrganization(Resource):
 class GetOrganizationTree(Resource):
     @jwt_required()
     def get(self):
-        claims = get_jwt()
-
+        claims = get_jwt()["sub"] 
+     
         if not claims.get("is_admin"):
             return {"error": "Only Administrator can access this resource."}, 403
 
