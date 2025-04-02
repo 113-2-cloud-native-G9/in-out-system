@@ -34,3 +34,21 @@ class EmployeeService:
             # Re-raise the exception to notify the caller
             raise e
     
+    @staticmethod
+    def edit_employee(employee_id, updated_data):
+        try:
+            employee = EmployeeModel.query.filter_by(employee_id=employee_id).first()
+            if not employee:
+                return None  # Employee not found
+            
+            # Update employee fields with the provided data
+            for key, value in updated_data.items():
+                if hasattr(employee, key):
+                    setattr(employee, key, value)
+            
+            db.session.commit()
+            return employee
+        except Exception as e:
+            db.session.rollback()  # Rollback in case of an error
+            print(f"Database error while editing employee {employee_id}: {str(e)}")
+            raise e

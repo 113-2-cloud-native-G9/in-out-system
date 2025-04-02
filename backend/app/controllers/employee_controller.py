@@ -71,6 +71,47 @@ class EmployeeAddingResource(Resource):
         EmployeeService.add_employee(new_employee)
 
         return {"message": "Employee added successfully"}, 201
+    
+# put /api/v1/employees/{employee_id}
+class EmployeeEditingResource(Resource):
+    @jwt_required()
+    def put(self, employee_id):
+        current_user = get_jwt_identity()
+        is_admin = current_user["is_admin"]
+
+        if not is_admin:
+            return {'message': 'Access denied. Only admins can edit employees.'}, 403
+
+        data = request.get_json()
+
+        # Ensure the employee exists
+        employee = EmployeeService.get_employee_by_id(employee_id)
+        if not employee:
+            return {'message': 'Employee not found'}, 404
+
+        # Prepare updated data
+        updated_data = {
+            "first_name": data.get("first_name"),
+            "last_name": data.get("last_name"),
+            "email": data.get("email"),
+            "phone_number": data.get("phone_number"),
+            "is_admin": data.get("is_admin"),
+            "organization_id": data.get("organization_id"),
+            "job_title": data.get("job_title"),
+            "hire_date": data.get("hire_date"),
+            "hire_status": data.get("hire_status"),
+            "updated_at": datetime.utcnow(),  # Update the timestamp
+            "updated_by": current_user["employee_id"],  # Set the current user's ID
+        }
+
+        try:
+            updated_employee = EmployeeService.edit_employee(employee_id, updated_data)
+            if not updated_employee:
+                return {'message': 'Employee not found'}, 404
+
+            return {"message": "Employee updated successfully"}, 200
+        except Exception as e:
+            return {"message": f"Failed to update employee: {str(e)}"}, 500
 
 # post /api/v1/employees/reset-password
 class ResetPasswordResource(Resource):
