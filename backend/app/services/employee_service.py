@@ -20,3 +20,17 @@ class EmployeeService:
             # Log the error (assuming you have a logging system)
             print(f"Database error while updating employee {employee.employee_id}: {str(e)}")
             raise e
+        
+    @staticmethod
+    def add_employee(employee):
+        try:
+            db.session.add(employee)
+            db.session.commit()
+        except Exception as e:
+        # Rollback the transaction in case of an error
+            db.session.rollback()
+            # Log the error (if logging is implemented)
+            print(f"Database error while adding employee {employee.employee_id}: {str(e)}")
+            # Re-raise the exception to notify the caller
+            raise e
+    

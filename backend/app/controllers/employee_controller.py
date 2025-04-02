@@ -1,6 +1,8 @@
 from flask import request
 from flask_restful import Resource
 from app.services.employee_service import EmployeeService
+from datetime import datetime  # Import datetime for timestamps
+from app.models.employee_model import EmployeeModel  # Import EmployeeModel
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 # get /api/v1/employees/<string:employee_id>
@@ -36,6 +38,40 @@ class EmployeeResource(Resource):
             'updated_by': employee.updated_by,
         }, 200
     
+# post /api/v1/employees
+class EmployeeAddingResource(Resource):
+    @jwt_required()
+    def post(self):
+        current_user = get_jwt_identity()
+        is_admin = current_user["is_admin"]
+
+        data = request.get_json()
+        if not is_admin:
+            return {'message': 'Access denied. Only admins can add employees.'}, 403
+
+        if EmployeeService.get_employee_by_id(data.get('employee_id')):
+            return {'message': 'The employee already exists'}, 400
+        
+        new_employee = EmployeeModel(
+            employee_id=data.get('employee_id'),
+            first_name=data.get('first_name'),
+            last_name=data.get('last_name'),
+            email=data.get('email'),
+            phone_number=data.get('phone_number'),
+            is_admin=data.get('is_admin', False),
+            job_title=data.get('job_title'),
+            organization_id=data.get('organization_id'),
+            hire_date=data.get('hire_date'),
+            hire_status=data.get('hire_status', 'active'),
+            updated_at=datetime.utcnow(),  # Set the current timestamp
+            updated_by=current_user['employee_id'],  # Use the current user's ID for updated_by
+            hashed_password=data.get('hashed_password', 'default_hashed_password'),  # Use a default hashed password or handle it as needed
+        )
+
+        EmployeeService.add_employee(new_employee)
+
+        return {"message": "Employee added successfully"}, 201
+
 # post /api/v1/employees/reset-password
 class ResetPasswordResource(Resource):
     @jwt_required()
