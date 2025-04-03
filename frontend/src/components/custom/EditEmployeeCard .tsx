@@ -6,13 +6,14 @@ import { mockOrganizations } from "@/mocks/organizations";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+    Dialog,
+    DialogContent,
+    DialogTrigger,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogClose
+} from "@/components/ui/dialog";
 import {
     Select,
     SelectContent,
@@ -21,57 +22,86 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { X, CalendarIcon } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CalendarIcon } from "lucide-react";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
 
-interface EditEmployeeCardProps {
-    closeForm: () => void;
+interface EditEmployeeDialogProps {
+    children: React.ReactNode; // Trigger element
     editType: "create" | "update";
     employeeData?: User;
+    onSubmit?: (formData: any) => void; // Optional callback for form submission
 }
 
-const EditEmployeeCard = ({
-    closeForm,
+const hashPassword = async (password: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+};
+
+const EditEmployeeDialog = ({
+    children,
     editType,
     employeeData,
-}: EditEmployeeCardProps) => {
+    onSubmit
+}: EditEmployeeDialogProps) => {
     const [formData, setFormData] = useState({
-        employeeId: "",
-        firstName: "",
-        lastName: "",
+        employee_id: "",
+        hashed_password: "",
+        first_name: "",
+        last_name: "",
         email: "",
-        phoneNumber: "",
-        isManager: false,
-        isAdmin: false,
-        jobTitle: "",
-        organizationId: "",
-        organizationName: "",
-        hireStatus: "active" as "active" | "inactive" | "onleave",
-        hireDate: "",
+        phone_number: "",
+        is_admin: false,
+        job_title: "",
+        organization_id: "",
+        hire_status: "active" as "active" | "inactive" | "onleave",
+        hire_date: "",
     });
 
     useEffect(() => {
-        if (editType === "update" && employeeData) {
-            setFormData({
-                employeeId: employeeData.employee_id,
-                firstName: employeeData.first_name,
-                lastName: employeeData.last_name,
-                email: employeeData.email,
-                phoneNumber: employeeData.phone_number,
-                isManager: employeeData.is_manager,
-                isAdmin: employeeData.is_admin,
-                jobTitle: employeeData.job_title,
-                organizationId: employeeData.organization_id,
-                organizationName: employeeData.organization_name,
-                hireStatus: employeeData.hire_status,
-                hireDate: employeeData.hire_date,
-            });
-        }
+        const updateFormData = async () => {
+            if (editType === "update" && employeeData) {
+                setFormData({
+                    employee_id: employeeData.employee_id,
+                    hashed_password: "",
+                    first_name: employeeData.first_name,
+                    last_name: employeeData.last_name,
+                    email: employeeData.email,
+                    phone_number: employeeData.phone_number,
+                    is_admin: employeeData.is_admin,
+                    job_title: employeeData.job_title,
+                    organization_id: employeeData.organization_id,
+                    hire_status: employeeData.hire_status,
+                    hire_date: employeeData.hire_date,
+                });
+            } else if (editType === "create") {
+                const password = '0000';
+                const hashedPassword = await hashPassword(password); 
+                setFormData({
+                    employee_id: "",
+                    hashed_password: hashedPassword,
+                    first_name: "",
+                    last_name: "",
+                    email: "",
+                    phone_number: "",
+                    is_admin: false,
+                    job_title: "",
+                    organization_id: "",
+                    hire_status: "active",
+                    hire_date: "",
+                });
+            }
+        };
+
+        updateFormData(); // Call the async function to update the form data
     }, [editType, employeeData]);
 
     const handleChange = <K extends keyof typeof formData>(
@@ -85,35 +115,24 @@ const EditEmployeeCard = ({
     };
 
     const handleSubmit = () => {
-        if (editType === "update") {
-            console.log("Updating employee:", formData);
-        } else {
-            console.log("Creating new employee:", formData);
+        if (onSubmit) {
+            onSubmit(formData);
         }
-        closeForm();
     };
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-            <Card className="w-full max-w-3xl">
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle>
-                            {editType === "create"
-                                ? "Create New Employee"
-                                : "Update Employee"}
-                        </CardTitle>
-                    </div>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full"
-                        onClick={closeForm}
-                    >
-                        <X size={18} />
-                    </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
+        <Dialog>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent className="md:min-w-[50rem] min-h-[20rem]">
+                <DialogHeader>
+                    <DialogTitle>
+                        {editType === "create"
+                            ? "Create New Employee"
+                            : "Update Employee"}
+                    </DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-4">
                     <div className="flex items-center space-x-4">
                         <div className="space-y-2">
                             <label
@@ -124,26 +143,43 @@ const EditEmployeeCard = ({
                             </label>
                             <Input
                                 id="employeeId"
-                                value={formData.employeeId}
+                                value={formData.employee_id}
                                 onChange={(e) =>
-                                    handleChange("employeeId", e.target.value)
+                                    handleChange("employee_id", e.target.value)
                                 }
+                                readOnly={editType === "update"}
+                                className={editType === "update" ? "cursor-not-allowed" : ""}
                             />
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="isAdmin"
-                                checked={formData.isAdmin}
-                                onCheckedChange={(checked) =>
-                                    handleChange("isAdmin", !!checked)
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium mb-1">Is Admin?</p>
+                            <RadioGroup
+                                defaultValue={formData.is_admin ? "yes" : "no"}
+                                value={formData.is_admin ? "yes" : "no"}
+                                onValueChange={(value) =>
+                                    handleChange("is_admin", value === "yes")
                                 }
-                            />
-                            <label
-                                htmlFor="isAdmin"
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                className="flex space-x-4"
                             >
-                                Is Admin?
-                            </label>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="yes" id="admin-yes" />
+                                    <label
+                                        htmlFor="admin-yes"
+                                        className="text-sm font-medium leading-none cursor-pointer"
+                                    >
+                                        Yes
+                                    </label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="no" id="admin-no" />
+                                    <label
+                                        htmlFor="admin-no"
+                                        className="text-sm font-medium leading-none cursor-pointer"
+                                    >
+                                        No
+                                    </label>
+                                </div>
+                            </RadioGroup>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -156,9 +192,9 @@ const EditEmployeeCard = ({
                             </label>
                             <Input
                                 id="firstName"
-                                value={formData.firstName}
+                                value={formData.first_name}
                                 onChange={(e) =>
-                                    handleChange("firstName", e.target.value)
+                                    handleChange("first_name", e.target.value)
                                 }
                             />
                         </div>
@@ -172,9 +208,9 @@ const EditEmployeeCard = ({
                             </label>
                             <Input
                                 id="lastName"
-                                value={formData.lastName}
+                                value={formData.last_name}
                                 onChange={(e) =>
-                                    handleChange("lastName", e.target.value)
+                                    handleChange("last_name", e.target.value)
                                 }
                             />
                         </div>
@@ -207,9 +243,9 @@ const EditEmployeeCard = ({
                             </label>
                             <Input
                                 id="phoneNumber"
-                                value={formData.phoneNumber}
+                                value={formData.phone_number}
                                 onChange={(e) =>
-                                    handleChange("phoneNumber", e.target.value)
+                                    handleChange("phone_number", e.target.value)
                                 }
                             />
                         </div>
@@ -224,16 +260,12 @@ const EditEmployeeCard = ({
                                 Department
                             </label>
                             <Select
-                                value={formData.organizationId}
+                                value={formData.organization_id}
                                 onValueChange={(value) => {
                                     const selected = mockOrganizations.find(
                                         (org) => org.organization_id === value
                                     );
-                                    handleChange("organizationId", value);
-                                    handleChange(
-                                        "organizationName",
-                                        selected?.organization_name || ""
-                                    );
+                                    handleChange("organization_id", value);
                                 }}
                             >
                                 <SelectTrigger className="border-foreground/50">
@@ -262,9 +294,9 @@ const EditEmployeeCard = ({
                             </label>
                             <Input
                                 id="jobTitle"
-                                value={formData.jobTitle}
+                                value={formData.job_title}
                                 onChange={(e) =>
-                                    handleChange("jobTitle", e.target.value)
+                                    handleChange("job_title", e.target.value)
                                 }
                             />
                         </div>
@@ -279,10 +311,10 @@ const EditEmployeeCard = ({
                                 Hire Status
                             </label>
                             <Select
-                                value={formData.hireStatus}
+                                value={formData.hire_status}
                                 onValueChange={(
                                     value: "active" | "inactive" | "onleave"
-                                ) => handleChange("hireStatus", value)}
+                                ) => handleChange("hire_status", value)}
                             >
                                 <SelectTrigger className="border-foreground/50">
                                     <SelectValue placeholder="Select Hire Status" />
@@ -313,15 +345,15 @@ const EditEmployeeCard = ({
                                     <Button
                                         variant={"outline"}
                                         className={cn(
-                                            "cursor-pointer w-full justify-start text-left font-normal",
-                                            !formData.hireDate &&
-                                                "text-muted-foreground"
+                                            "bg-popover/50 cursor-pointer w-full justify-start border-foreground/50 text-left font-normal",
+                                            !formData.hire_date &&
+                                            "text-muted-foreground"
                                         )}
                                     >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {formData.hireDate ? (
+                                        {formData.hire_date ? (
                                             format(
-                                                new Date(formData.hireDate),
+                                                new Date(formData.hire_date),
                                                 "PPP"
                                             )
                                         ) : (
@@ -334,36 +366,38 @@ const EditEmployeeCard = ({
                                         mode="single"
                                         className="bg-border"
                                         selected={
-                                            formData.hireDate
-                                                ? new Date(formData.hireDate)
+                                            formData.hire_date
+                                                ? new Date(formData.hire_date)
                                                 : undefined
                                         }
                                         onSelect={(date) => {
                                             handleChange(
-                                                "hireDate",
+                                                "hire_date",
                                                 date
                                                     ? format(date, "yyyy-MM-dd")
                                                     : ""
                                             );
                                         }}
-                                        initialFocus
                                     />
                                 </PopoverContent>
                             </Popover>
                         </div>
                     </div>
-                </CardContent>
-                <CardFooter className="flex justify-end space-x-2">
-                    <Button variant="outline" onClick={closeForm}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSubmit}>
+                </div>
+
+                <DialogFooter className="flex justify-end space-x-2">
+                    <DialogClose asChild>
+                        <Button variant="outline">
+                            Cancel
+                        </Button>
+                    </DialogClose>
+                    <Button onClick={handleSubmit} variant="secondary">
                         {editType === "create" ? "Create" : "Update"}
                     </Button>
-                </CardFooter>
-            </Card>
-        </div>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 
-export default EditEmployeeCard;
+export default EditEmployeeDialog;

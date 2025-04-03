@@ -1,5 +1,6 @@
 import { JSX, useState } from 'react';
 import { User } from '@/types/user';
+import { api } from "@/hooks/apiEndpoints";
 import { mockEmployees } from "@/mocks/employees";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import EditEmployeeCard from "@/components/custom/EditEmployeeCard ";
-
+import EditEmployeeDialog from "@/components/custom/EditEmployeeCard ";
 
 // Define sort direction type
 type SortDirection = 'asc' | 'desc' | null;
@@ -64,7 +64,6 @@ const EmployeeListPage = () => {
     return statusMatch && searchMatch && departmentMatch;
   });
 
-
   // Sort filtered employees if sort field and direction are set
   const sortedEmployees: User[] = [...filteredEmployees].sort((a, b) => {
     if (!sortField || !sortDirection) return 0;
@@ -89,21 +88,6 @@ const EmployeeListPage = () => {
   const handlePageChange = (pageNumber: number): void => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
-    }
-  };
-
-  const closeEditForm = () => {
-    setEditingEmployee(null);
-    setShowEditCard(false);
-  };
-
-  // Handle the click of the edit icon
-  const handleEdit = (employeeId: string): void => {
-    const employee = employees.find(emp => emp.employee_id === employeeId);
-    if (employee) {
-      setEditingEmployee(employee);
-      setShowEditCard(true);
-      console.log(`Editing employee with ID: ${employeeId}`);
     }
   };
 
@@ -139,6 +123,21 @@ const EmployeeListPage = () => {
     }
 
     return null;
+  };
+
+  // Call the appropriate API function based on editType
+  const handleEmployeeSubmit = (formData: any) => {
+    if (editingEmployee) {
+      // Update employee
+      api.editEmployee(editingEmployee.employee_id, formData).then(() => {
+        console.log('Employee updated successfully');
+      }).catch((err) => console.error('Error updating employee:', err));
+    } else {
+      // Create new employee
+      api.createEmployee(formData).then(() => {
+        console.log('Employee created successfully');
+      }).catch((err) => console.error('Error creating employee:', err));
+    }
   };
 
   return (
@@ -188,10 +187,15 @@ const EmployeeListPage = () => {
           </Select>
         </div>
         <div className="flex items-center space-x-4">
-          <Button className="cursor-pointer bg-accent hover:bg-accent/70 text-primary-foreground px-3 py-3 rounded-lg shadow-md flex items-center space-x-2 transition-all duration-300">
-            <UserPlus size={18} className="text-primary-foreground" /> 
-            <span>Add Employee</span>
-          </Button>
+          <EditEmployeeDialog
+            editType="create"
+            onSubmit={handleEmployeeSubmit}
+          >
+            <Button className="cursor-pointer bg-accent hover:bg-accent/70 text-primary-foreground px-3 py-3 rounded-lg shadow-md flex items-center space-x-2 transition-all duration-300">
+              <UserPlus size={18} className="text-primary-foreground" />
+              <span>Add Employee</span>
+            </Button>
+          </EditEmployeeDialog>
         </div>
       </div>
 
@@ -268,15 +272,29 @@ const EmployeeListPage = () => {
                   <TableCell className="px-4 py-2">{employee.first_name} {employee.last_name}</TableCell>
                   <TableCell className="px-4 py-2">{employee.job_title}</TableCell>
                   <TableCell className="px-4 py-2">{employee.organization_name}</TableCell>
-                  <TableCell className="px-4 py-2">{employee.hire_status}</TableCell>
+                  <TableCell className="px-4 py-2">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full 
+                        ${employee.hire_status === 'active' ? 'bg-sidebar-accent text-primary-foreground' : ''}
+                        ${employee.hire_status === 'inactive' ? 'bg-popover text-primary-foreground' : ''}
+                        ${employee.hire_status === 'onleave' ? 'bg-chart-1 text-primary-foreground' : ''}`}
+                    >
+                      {employee.hire_status.charAt(0).toUpperCase() + employee.hire_status.slice(1)}
+                    </span>
+                  </TableCell>
                   <TableCell className="px-4 py-2">{employee.email}</TableCell>
                   <TableCell className="px-4 py-2">{employee.hire_date}</TableCell>
                   <TableCell className="px-8 py-2">
-                    <Edit
-                      size={16}
-                      className="text-secondary cursor-pointer hover:text-primary"
-                      onClick={() => handleEdit(employee.employee_id)}
-                    />
+                    <EditEmployeeDialog
+                      editType="update"
+                      employeeData={employee}
+                      onSubmit={handleEmployeeSubmit}
+                    >
+                      <Edit
+                        size={16}
+                        className="text-secondary cursor-pointer hover:text-primary"
+                      />
+                    </EditEmployeeDialog>
                   </TableCell>
                 </TableRow>
               ))
@@ -335,14 +353,6 @@ const EmployeeListPage = () => {
         </Button>
 
       </div>
-      {/* Edit Employee Card (Temporarily Blank) */}
-      {showEditCard && editingEmployee && (
-        <EditEmployeeCard
-          employeeData={editingEmployee}
-          closeForm={closeEditForm}
-
-        />
-      )}
     </div>
   );
 };

@@ -5,7 +5,7 @@
 
 :root {
     --radius: 0.625rem;
-    --background: #F3F4F6;
+    --background: #eeeeee;
     /* Light background */
     --foreground: #1F2937;
     /* Dark text */
@@ -106,7 +106,7 @@
     /* Dark input background */
     --ring: #3B82F6;
     /* Blue ring color for focus or hover */
-    --chart-1: #ffd606;
+    --chart-1: #F59E0B;
     /* Golden color for chart 1 */
     --chart-2: #9333EA;
     /* Purple color for chart 2 */

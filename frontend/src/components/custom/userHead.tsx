@@ -1,18 +1,26 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "@/types";
 
-export function UserHead({ user }: { user: User | null }) {
+interface UserHeadProps {
+    user: User | null;
+    onClick?: () => void;  
+}
+
+export function UserHead({ user, onClick }: UserHeadProps) {
     if (!user) {
         return null;
     }
     return (
-        <div className="flex items-center space-x-2 min-w-40">
+        <div
+            className="flex items-center space-x-2 min-w-40 cursor-pointer" 
+            onClick={onClick} 
+        >
             <Avatar>
                 <AvatarFallback>
                     {user.first_name[0]}
                     {user.last_name[0]}
                 </AvatarFallback>
-                <AvatarImage src={user.employee_icon} />
+                {/* <AvatarImage src={user.employee_icon} /> */}
             </Avatar>
             <div>
                 <h2 className="text-lg text-foreground font-semibold">
