@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.organization_service import OrganizationService
 
 
@@ -7,10 +7,9 @@ from app.services.organization_service import OrganizationService
 class OrganizationList(Resource):
     @jwt_required()
     def get(self):
-        claims = get_jwt()
-        
+        claims = get_jwt_identity()
         #如果不是admim拒絕訪問
-        if not claims.get("is_admin"):
+        if not claims["is_admin"]:
             return {"error": "Admin only access"}, 403
         
         #是admin
@@ -20,10 +19,10 @@ class OrganizationList(Resource):
 class GetOrganization(Resource):
     @jwt_required()
     def get(self, organization_id):
-        claims = get_jwt()
+        claims = get_jwt_identity()
 
         #限定Administrator或Manager
-        if not (claims.get("is_admin") or claims.get("is_manager")):
+        if not (claims["is_admin"] or claims["is_manager"]):
             return {"error": "Only Administrator or Manager can access this resource."}, 403
 
 
@@ -33,9 +32,9 @@ class GetOrganization(Resource):
 class GetOrganizationTree(Resource):
     @jwt_required()
     def get(self):
-        claims = get_jwt()["sub"] 
+        claims = get_jwt_identity()
      
-        if not claims.get("is_admin"):
+        if not claims["is_admin"]:
             return {"error": "Only Administrator can access this resource."}, 403
 
         return OrganizationService.get_organization_tree()
