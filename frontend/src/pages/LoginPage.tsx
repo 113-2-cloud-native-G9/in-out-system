@@ -76,7 +76,7 @@ export function LoginPage() {
                             Employee ID
                         </Label>
                         <div className="relative group">
-                            <User2 className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground/50 transition-colors group-hover:text-primary/50" />
+                            <User2 className="absolute left-3 top-2.5 h-5 w-5 text-muted transition-colors group-hover:text-primary/50" />
                             <Input
                                 id="employeeId"
                                 type="text"
@@ -93,13 +93,13 @@ export function LoginPage() {
                             Password
                         </Label>
                         <div className="relative group">
-                            <KeyRound className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground/50 transition-colors group-hover:text-primary/50" />
+                            <KeyRound className="absolute left-3 top-2.5 h-5 w-5 text-muted transition-colors group-hover:text-primary/50" />
                             <Input
                                 id="password"
                                 type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="pl-10 bg-background/50 border-secondary/50 transition-colors focus:border-primary/50 font-medium"
+                                className="pl-10 border-secondary/50 transition-colors focus:border-primary/50 font-medium"
                                 placeholder="Enter your password"
                             />
                             <Button
@@ -110,9 +110,9 @@ export function LoginPage() {
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? (
-                                    <EyeOff className="h-5 w-5 text-muted-foreground/50 hover:text-primary/50" />
+                                    <EyeOff className="h-5 w-5 text-muted hover:text-primary/50" />
                                 ) : (
-                                    <Eye className="h-5 w-5 text-muted-foreground/50 hover:text-primary/50" />
+                                    <Eye className="h-5 w-5 text-muted hover:text-primary/50" />
                                 )}
                             </Button>
                         </div>

@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import { jwtDecode } from 'jwt-decode';  // Correct the import if needed (use named or default import)
-import { api } from "@/hooks/apiEndpoints"; // Assuming you have API calls like login in this file
-import { User } from "@/types"; // Assuming you have a User type for user information
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { jwtDecode } from 'jwt-decode';
+import { api } from "@/hooks/apiEndpoints";
+import { User } from "@/types";
 
 interface LoginResponse {
     jwt_token: string;
@@ -14,7 +14,6 @@ interface LoginResponse {
     organization_name: string;
 }
 
-// UserState interface for managing the authentication state
 interface UserState {
     user: User | null;
     isAuthenticated: boolean;
@@ -23,7 +22,6 @@ interface UserState {
     authState: "loggedIn" | "loggedOut" | "loading";
 }
 
-// Initial state for the user
 const initialUserState: UserState = {
     user: null,
     isAuthenticated: false,
@@ -32,7 +30,6 @@ const initialUserState: UserState = {
     authState: "loading"
 };
 
-// Create Context
 const UserContext = createContext<UserState>(initialUserState);
 
 interface UserProviderProps {
@@ -42,15 +39,51 @@ interface UserProviderProps {
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     const [userState, setUserState] = useState<UserState>(initialUserState);
 
+    useEffect(() => {
+        const initializeAuth = () => {
+            const token = localStorage.getItem("jwtToken");
+            const storedUser = localStorage.getItem("currentUser");
+            
+            if (token && storedUser) {
+                try {
+                    const decoded = jwtDecode<any>(token);
+                    const currentTime = Date.now() / 1000;
+                    
+                    if (decoded.exp && decoded.exp < currentTime) {
+                        logout();
+                        return;
+                    }
+                    
+                    const user = JSON.parse(storedUser) as User;
+                    
+                    setUserState({
+                        user,
+                        isAuthenticated: true,
+                        login,
+                        logout,
+                        authState: "loggedIn"
+                    });
+                } catch (error) {
+                    logout();
+                }
+            } else {
+                setUserState(prevState => ({
+                    ...prevState,
+                    authState: "loggedOut"
+                }));
+            }
+        };
+        
+        initializeAuth();
+    }, []);  
+
     const login = async (credentials: { employee_id: string, hashed_password: string }) => {
         try {
-            setUserState((prevState) => ({ ...prevState, authState: "loading" }));  // Set loading state before API call
+            setUserState((prevState) => ({ ...prevState, authState: "loading" }));
 
-            // Call the login API and assert the response type
             const response = await api.login(credentials) as LoginResponse;
 
             if (response && response.jwt_token) {
-                // Decode the JWT token
                 const decoded = jwtDecode<any>(response.jwt_token);
 
                 const currentUser = {
@@ -68,7 +101,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
                     hire_date: decoded.sub.hire_date
                 };
 
-                // Update the userState
                 setUserState({
                     user: currentUser,
                     isAuthenticated: true,
@@ -77,7 +109,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
                     authState: "loggedIn"
                 });
 
-                // Store data in localStorage
                 localStorage.setItem("jwtToken", response.jwt_token);
                 localStorage.setItem("currentUser", JSON.stringify(currentUser));
 
@@ -94,7 +125,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     const logout = () => {
         localStorage.clear();
 
-        // Reset userState
         setUserState({
             user: null,
             isAuthenticated: false,
