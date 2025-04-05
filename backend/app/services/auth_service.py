@@ -2,6 +2,7 @@ from app.models import db
 from app.models.employee_model import EmployeeModel
 from app.models.organization_model import  OrganizationModel
 from flask_jwt_extended import create_access_token
+from datetime import timedelta
 
 class AuthService:
     @staticmethod
@@ -31,7 +32,7 @@ class AuthService:
             "hire_status": user.hire_status
         }
 
-        jwt_token = create_access_token(identity=user_identity)
+        jwt_token = create_access_token(identity=user_identity, expires_delta=timedelta(hours=12))
 
         response_data = {
             "jwt_token": jwt_token,
