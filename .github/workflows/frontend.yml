@@ -48,6 +48,10 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker $REPO
+
       - name: Build and Push Frontend Docker Image
         run: |
           cd frontend
