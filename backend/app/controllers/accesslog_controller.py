@@ -11,12 +11,12 @@ class GetEmployeeAccessLog(Resource):
         date_param = request.args.get("date")  # 從 URL 參數取得日期
 
         if not date_param:
-            return {"logs": "datetime are not provided"}, 404
+            return {"error": "datetime are not provided"}, 404
         
         is_admin = get_jwt_identity()["is_admin"]
         is_manager = get_jwt_identity()['is_manager']
         if not is_admin and not is_manager:
-            return {"logs": "You are not admin or manager"}, 401 #只有admin or manager可以看他人的資料
+            return {"error": "You are not admin or manager"}, 401 #只有admin or manager可以看他人的資料
         
         logs, status = AccessLogService.get_employee_logs_by_employeeid_and_date(employee_id, date_param)
         return {"logs": logs}, status
