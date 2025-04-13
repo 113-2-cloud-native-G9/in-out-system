@@ -8,10 +8,7 @@ function App() {
             <>
                 <Menu items={menuItems} />
                 <div
-                    className="container mx-auto p-4 overflow-hidden"
-                    style={{
-                        maxHeight: "calc(100vh - 5rem)",
-                    }}
+                    className="container mx-auto p-4 overflow-hidden md:max-h-[calc(100dvh-5rem)]"
                 >
                     <Routes>
                         {routes.map((route, index) => (
