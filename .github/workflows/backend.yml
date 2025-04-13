@@ -31,7 +31,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          cd backend  # 切換到後端目錄
+          cd backend  
           docker build -t $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA .
           docker push $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA
 
