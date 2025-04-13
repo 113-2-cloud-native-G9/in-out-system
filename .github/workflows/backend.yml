@@ -31,6 +31,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
+          cd backend  # 切換到後端目錄
           docker build -t $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA .
           docker push $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA
 
@@ -40,4 +41,9 @@ jobs:
             --image $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA \
             --region $REGION \
             --platform managed \
-            --allow-unauthenticated
+            --allow-unauthenticated \
+            --min-instances 1 \
+            --max-instances 10 \
+            --cpu 1 \
+            --memory 512Mi \
+            --timeout 300s
