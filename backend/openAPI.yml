@@ -1,0 +1,519 @@
+openapi: '3.0.3'
+info:
+  title: Yoyo點點名 API Test
+  version: '1.0'
+servers:
+  - url: http://127.0.0.1:8080
+    description: Local development server
+  # 侯樂聲記得更新
+  - url: https://api.server.production/v1
+    description: Production server
+
+paths:
+  /api/v1/employees:
+    post:
+      summary: 新增員工資訊
+      description: 新增員工資訊
+      operationId: addEmployee
+      tags:
+        - EmployeeController
+      # security:
+      #   - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employee_id:
+                  type: string
+                  example: 12345
+                first_name:
+                  type: string
+                  example: John
+                last_name:
+                  type: string
+                  example: Doe
+                email:
+                  type: string
+                  example: johndoe@example.com
+                phone_number:
+                  type: string
+                  example: "+1234567890"
+                is_admin:
+                  type: boolean
+                  example: false
+                job_title:
+                  type: string
+                  example: Software Engineer
+                organization_id:
+                  type: string
+                  example: FIN1234
+                hire_date:
+                  type: string
+                  format: date
+                  example: "2025-03-23"
+                hire_status:
+                  type: string
+                  enum: [active, inactive, onleave]
+                  example: active
+              required:
+                - employee_id
+                - first_name
+                - last_name
+                - email
+                - phone_number
+                - is_admin
+                - job_title
+                - organization_id
+                - hire_date
+                - hire_status
+      responses:
+        '200':
+          description: Employee successfully added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                   
+  /api/v1/employees/{employee_id}:
+      get:
+        summary: 取得當前員工資訊
+        description: Fetches the details of a specific employee by their ID.
+        operationId: getEmployee
+        tags:
+          - EmployeeController
+        # security:
+        #   - BearerAuth: []
+        parameters:
+          - name: employee_id
+            in: path
+            required: true
+            description: The unique identifier for the employee.
+            schema:
+              type: string
+              example: 12345
+        responses:
+          '200':
+            description: Employee information successfully retrieved
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    employee_id:
+                      type: string
+                      example: 12345
+                    first_name:
+                      type: string
+                      example: John
+                    last_name:
+                      type: string
+                      example: Doe
+                    email:
+                      type: string
+                      example: john.doe@example.com
+                    phone_number:
+                      type: string
+                      example: "123-456-7890"
+                    is_manager:
+                      type: boolean
+                      example: true
+                    is_admin:
+                      type: boolean
+                      example: false
+                    job_title:
+                      type: string
+                      example: Software Engineer
+                    organization_id:
+                      type: string
+                      example: FIN001
+                    organization_name:
+                      type: string
+                      example: Engineering
+                    hire_status:
+                      type: string
+                      example: active
+                    hire_date:
+                      type: string
+                      format: date
+                      example: "2022-01-01" 
+      put:
+        summary: 編輯員工資訊
+        description: Updates the information of an existing employee.
+        operationId: editEmployee
+        tags:
+          - EmployeeController
+        # security:
+        #   - BearerAuth: []
+        parameters:
+          - name: employee_id
+            in: path
+            required: true
+            description: The unique identifier for the employee.
+            schema:
+              type: string
+              example: 12345
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  first_name:
+                    type: string
+                    example: John
+                  last_name:
+                    type: string
+                    example: Doe
+                  email:
+                    type: string
+                    example: john.doe@example.com
+                  phone_number:
+                    type: string
+                    example: "123-456-7890"
+                  is_admin:
+                    type: boolean
+                    example: false
+                  organization_id:
+                    type: string
+                    example: ORG01
+                  job_title:
+                    type: string
+                    example: Software Engineer
+                  hire_date:
+                    type: string
+                    format: date
+                    example: "2022-01-15"
+                  hire_status:
+                    type: string
+                    enum: [active, inactive, onleave]
+                    example: active
+                required:
+                  - first_name
+                  - last_name
+                  - email
+                  - phone_number
+                  - is_admin
+                  - organization_id
+                  - job_title
+                  - hire_date
+                  - hire_status
+        responses:
+          '200':
+            description: Employee information successfully updated
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: Employee information successfully updated.
+  /api/v1/employees/reset-password:
+    post:
+      summary: 修改密碼
+      description: Allows an employee to reset their password by providing the original hashed password and a new hashed password.
+      operationId: resetPassword
+      tags:
+        - EmployeeController
+      # security:
+      #   - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                original_hashed_password:
+                  type: string
+                  example: "oldpasswordhashedstring"
+                new_hashed_password:
+                  type: string
+                  example: "newpasswordhashedstring"
+              required:
+                - original_hashed_password
+                - new_hashed_password
+      responses:
+        '200':
+          description: Password successfully reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password successfully reset."
+  /api/v1/employees/photo/{employee_id}:
+    post:
+      summary: 新增或修改員工照片
+      description: Allows an employee to upload a photo associated with their profile.
+      operationId: uploadEmployeePhoto
+      tags:
+        - EmployeeController
+      # security:
+      #   - BearerAuth: []
+      parameters:
+        - name: employee_id
+          in: path
+          required: true
+          description: The unique identifier for the employee.
+          schema:
+            type: string
+            example: 12345
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                  description: The photo file of the employee to be uploaded.
+      responses:
+        '200':
+          description: Employee photo successfully uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Employee photo successfully uploaded."       
+    get:
+      summary: 取得員工照片
+      description: Fetches the photo of the employee.
+      operationId: getEmployeePhoto
+      tags:
+        - EmployeeController
+      parameters:
+        - name: employee_id
+          in: path
+          required: true
+          description: The unique identifier for the employee.
+          schema:
+            type: string
+            example: 12345
+      # security:
+      #   - BearerAuth: []
+      responses:
+        '200':
+          description: Employee photo successfully retrieved
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /api/v1/auth/login:
+    post:
+      summary: 登入
+      description: Authenticates an employee and returns a JWT token along with employee information.
+      operationId: login
+      tags:
+        - AuthController
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employee_id:
+                  type: string
+                  example: 12345
+                hashed_password:
+                  type: string
+                  example: "5d41402abc4b2a76b9719d911017c592"
+              required:
+                - employee_id
+                - hashed_password
+      responses:
+        '200':
+          description: Successfully logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt_token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IkUxMjM0NSIsImZpcnN0X25hbWUiOiJKb2huIiwiY29tcGFueV9pZCI6Ik9SRzAxIiwic3RhcnQiOiJhdmFpbGFibGUiLCJpbnRlcnZpZXciOiJzb2Z0d2FyZSBuZXZlbCByb2xlIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImZyb250X251bWJlciI6IjEyMy00NTYtNzg5MCIsImNvbXBhbnlfaWQiOiJPUkcxMjMiLCJpY19tYW5hZ2VyIjpmYWxzZSwiaWF0IjoxNjEyMzQ1NTYwLCJleHBpcmVkX3N0YXR1cyI6ImFjdGl2ZSJ9.gT6zyksJdyxVbwODaGGsUpDwJSqbfz7csP1nMl52Hng"
+                  first_name:
+                    type: string
+                    example: "John"
+                  last_name:
+                    type: string
+                    example: "Doe"
+                  email:
+                    type: string
+                    example: "john.doe@example.com"
+                  phone_number:
+                    type: string
+                    example: "123-456-7890"
+                  job_title:
+                    type: string
+                    example: "Software Engineer"
+                  organization_id:
+                    type: string
+                    example: "ORG01"
+                  organization_name:
+                    type: string
+                    example: "Engineering"
+  /api/v1/access-logs/employees/{employee_id}:
+    get:
+      summary: 取得員工某日打卡記錄
+      description: Fetches the access logs for a given employee and date.
+      operationId: getEmployeeAccessLogs
+      tags:
+        - AccessLogController
+      # security:
+      #   - BearerAuth: []
+      parameters:
+        - name: employee_id
+          in: path
+          required: true
+          description: The unique identifier of the employee.
+          schema:
+            type: string
+            example: 12345
+        - name: date
+          in: query
+          required: true
+          description: The date for which the access logs are requested.
+          schema:
+            type: string
+            example: "2025-02-15"
+      responses:
+        '200':
+          description: Access logs successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        log_id:
+                          type: integer
+                          example: 1
+                        access_time:
+                          type: string
+                          format: date-time
+                          example: "2025-02-15T09:00:00"
+                        direction:
+                          type: string
+                          enum: [in, out]
+                          example: "in"
+                        gate_name:
+                          type: string
+                          example: "Main Gate"
+                        gate_type:
+                          type: string
+                          example: "Main Entrance"
+
+  /api/v1/access-logs:                        
+    post:
+      summary: Add 打卡記錄
+      description: Adds a new access log for the employee based on the provided access time and gate ID.
+      operationId: addAccessLog
+      tags:
+        - AccessLogController
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employee_id:
+                  type: string
+                  example: 101
+                access_time:
+                  type: string
+                  format: date-time
+                  example: "2025-03-18T09:00:00"
+                gate_id:
+                  type: integer
+                  example: 1
+              required:
+                - employee_id
+                - access_time
+                - gate_id
+      responses:
+        '200':
+          description: Access log successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Access log successfully created"  
+
+
+    get:
+      summary: 取得自己某日打卡記錄
+      description: Fetches the access logs for own and date.
+      operationId: getOwnAccessLogs
+      tags:
+        - AccessLogController
+      # security:
+      #   - BearerAuth: []
+      parameters:
+        - name: date
+          in: query
+          required: true
+          description: The date for which the access logs are requested.
+          schema:
+            type: string
+            example: "2025-02-15"
+      responses:
+        '200':
+          description: Access logs successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        log_id:
+                          type: integer
+                          example: 1
+                        access_time:
+                          type: string
+                          format: date-time
+                          example: "2025-02-15T09:00:00"
+                        direction:
+                          type: string
+                          enum: [in, out]
+                          example: "in"
+                        gate_name:
+                          type: string
+                          example: "Main Gate"
+                        gate_type:
+                          type: string
+                          example: "Main Entrance"     
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,51 @@
+name: Deploy to GCP Cloud Run
+
+on:
+  push:
+    branches:
+      - main  # 測試的時候再用backend-dev
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}  # 這裡會自動讀取 GCP_PROJECT_ID
+  SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
+  REGION: ${{ secrets.GCP_REGION }}
+  REPO: asia-east1-docker.pkg.dev  # Artifact Registry 的位置
+
+jobs:
+  deploy:
+    name: Deploy to Cloud Run
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker $REPO
+
+      - name: Build and Push Docker Image
+        run: |
+          cd backend  
+          docker build -t $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA .
+          docker push $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy $SERVICE \
+            --image $REPO/$PROJECT_ID/in-out-system-docker-repo/$SERVICE:$GITHUB_SHA \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --add-cloudsql-instances ${{ secrets.INSTANCE_CONNECTION_NAME }} \
+            --set-env-vars INSTANCE_CONNECTION_NAME=${{ secrets.INSTANCE_CONNECTION_NAME }},DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},DB_NAME=${{ secrets.DB_NAME }},JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
+            --min-instances 1 \
+            --max-instances 10 \
+            --cpu 1 \
+            --memory 512Mi \
+            --timeout 300s
