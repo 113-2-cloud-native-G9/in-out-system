@@ -3,7 +3,7 @@ name: Deploy to GCP Cloud Run
 on:
   push:
     branches:
-      - backend-dev  # 測試的時候再用backend-dev
+      - main  # 測試的時候再用backend-dev
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}  # 這裡會自動讀取 GCP_PROJECT_ID
