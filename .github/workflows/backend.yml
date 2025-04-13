@@ -1,4 +1,4 @@
-name: Deploy to GCP Cloud Run
+name: Deploy Backend to GCP Cloud Run
 
 on:
   push:
@@ -13,7 +13,7 @@ env:
 
 jobs:
   deploy:
-    name: Deploy to Cloud Run
+    name: Deploy Backend to Cloud Run
     runs-on: ubuntu-latest
 
     steps:
