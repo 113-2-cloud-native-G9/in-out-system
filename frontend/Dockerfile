@@ -20,7 +20,10 @@ RUN npm run build
 FROM nginx:latest
 
 # 複製構建後的檔案到 nginx 的 public 目錄
-COPY --from=0 /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# 複製自定義的 nginx 配置
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 開啟 8080 端口
 EXPOSE 8080
