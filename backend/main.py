@@ -21,12 +21,19 @@ CORS(app)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')  #這是伺服器簽署 JWT token 用的密鑰 到時候前端請求時會用這個解密看看是否合法
 jwt = JWTManager(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = (
-    f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@"
-    f"{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
-)
+if os.getenv("INSTANCE_CONNECTION_NAME") or os.getenv("CLOUD_RUN", False):
+    # Cloud Run or App Engine
+    app.config['SQLALCHEMY_DATABASE_URI'] = (
+        f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@localhost/"
+        f"{os.getenv('DB_NAME')}?unix_socket=/cloudsql/{os.getenv('INSTANCE_CONNECTION_NAME')}"
+    )
+else:
+    # Local dev
+    app.config['SQLALCHEMY_DATABASE_URI'] = (
+        f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/"
+        f"{os.getenv('DB_NAME')}"
+    )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 
 db = init_db(app)
 initialize_routes(api)
