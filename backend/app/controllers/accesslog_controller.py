@@ -55,7 +55,7 @@ class CreatePersonalAccessLog(Resource):
             print(f"Pub/Sub error: {e}")
             return {"error": "Failed to process message"}, 500
         
- #GET /api/v1/access-logs?date=<string>
+#GET /api/v1/access-logs?date=<string>
 class GetPersonalAccessLog(Resource):    
     @jwt_required()
     def get(self):  
