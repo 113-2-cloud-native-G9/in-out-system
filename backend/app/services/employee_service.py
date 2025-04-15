@@ -1,4 +1,5 @@
 from app.models.employee_model import EmployeeModel
+from app.models.organization_model import OrganizationModel
 from app.models import db  # Import the db object
 from datetime import datetime  # Import datetime for timestamps
 
@@ -52,7 +53,14 @@ class EmployeeService:
     def add_employee(data, created_by):
         if EmployeeModel.query.filter_by(employee_id=data.get('employee_id')).first():
             raise ValueError("The employee already exists")
-
+        
+        organization_id = data.get('organization_id')
+        if not organization_id:
+            raise ValueError("Missing organization_id")
+        
+        if not OrganizationModel.query.filter_by(organization_id=organization_id).first():
+            raise ValueError(f"Organization with id {organization_id} does not exist")
+        
         employee = EmployeeModel(
             employee_id=data.get('employee_id'),
             first_name=data.get('first_name'),
