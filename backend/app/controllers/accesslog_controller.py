@@ -26,16 +26,19 @@ class GetEmployeeAccessLog(Resource):
 #POST /api/v1/pubsub/access-logs
 class CreatePersonalAccessLog(Resource):
     def post(self):
-        
+        envelope = request.get_json()
+
+        # 檢查 Pub/Sub 標準訊息格式
+        if not envelope or "message" not in envelope:
+            return {"error": "No message field in request"}, 400
 
         try:
-            # # 解碼 base64 資料  如果在pub/sub開啟--push-no-wrapper（載重解封）功能就可以直接抓資料不用讓gcp先用base64編碼 然後我們還要自己解碼
-            # pubsub_message = envelope["message"]
-            # data = base64.b64decode(pubsub_message["data"]).decode("utf-8")
-            # log_data = json.loads(data)
+            # 解碼 base64 資料
+            pubsub_message = envelope["message"]
+            data = base64.b64decode(pubsub_message["data"]).decode("utf-8")
+            log_data = json.loads(data)
 
             # 抓出欄位
-            log_data = request.get_json()
             employee_id = log_data.get("employee_id")
             access_time = log_data.get("access_time")
             gate_id = log_data.get("gate_id")
@@ -52,7 +55,7 @@ class CreatePersonalAccessLog(Resource):
             print(f"Pub/Sub error: {e}")
             return {"error": "Failed to process message"}, 500
         
-#GET /api/v1/access-logs?date=<string>
+ #GET /api/v1/access-logs?date=<string>
 class GetPersonalAccessLog(Resource):    
     @jwt_required()
     def get(self):  

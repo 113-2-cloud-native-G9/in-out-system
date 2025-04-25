@@ -13,7 +13,7 @@ publisher = pubsub_v1.PublisherClient()
 topic_path = publisher.topic_path(PROJECT_ID, TOPIC_ID)
 
 # 員工與閘口資料（隨機）
-EMPLOYEE_IDS = ['E014']
+EMPLOYEE_IDS = ['E011']
 GATE_IDS = [1,2]
 
 def generate_test_data():
@@ -32,7 +32,7 @@ try:
         message_id = future.result()
         print(f"✅ 成功送出訊息！Message ID: {message_id}")
         print(f"內容：{message_json}")
-        time.sleep(3)  # 每 10 秒送一筆
+        time.sleep(10)  # 每 10 秒送一筆
 
 except KeyboardInterrupt:
     print("🛑 停止發送")
