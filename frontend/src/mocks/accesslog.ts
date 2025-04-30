@@ -1,5 +1,3 @@
-import { AccessLog } from "@/types";
-
 export const mockAccessLogs: Array<AccessLog> = [
     {
         log_id: 1,

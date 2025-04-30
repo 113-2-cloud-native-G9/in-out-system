@@ -1,8 +1,4 @@
-import {
-    EmployeeAttendance,
-    LateArrivalStatus,
-    EarlyDepartureStatus,
-} from "@/types";
+import { LateArrivalStatus, EarlyDepartureStatus } from "@/types";
 
 export const mockAttendance: EmployeeAttendance = {
     employee_id: "E001",
