@@ -1,6 +1,6 @@
 from google.cloud import pubsub_v1
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 import random
 import time
 
@@ -13,13 +13,13 @@ publisher = pubsub_v1.PublisherClient()
 topic_path = publisher.topic_path(PROJECT_ID, TOPIC_ID)
 
 # 員工與閘口資料（隨機）
-EMPLOYEE_IDS = ['E011']
-GATE_IDS = [1,2]
+EMPLOYEE_IDS = ['E012']
+GATE_IDS = [2]
 
 def generate_test_data():
     return {
         "employee_id": random.choice(EMPLOYEE_IDS),
-        "access_time": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "access_time": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         "gate_id": random.choice(GATE_IDS)
     }
 
@@ -30,9 +30,10 @@ try:
         message_bytes = message_json.encode("utf-8")
         future = publisher.publish(topic_path, data=message_bytes)
         message_id = future.result()
-        print(f"✅ 成功送出訊息！Message ID: {message_id}")
+        print(f"✅ 成功送出訊息 Message ID: {message_id}")
         print(f"內容：{message_json}")
         time.sleep(10)  # 每 10 秒送一筆
+        break
 
 except KeyboardInterrupt:
     print("🛑 停止發送")
