@@ -14,7 +14,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { AccessLog } from "@/types";
 import { mockAccessLogs } from "@/mocks/accesslog";
 import {
     ArrowUpDown,

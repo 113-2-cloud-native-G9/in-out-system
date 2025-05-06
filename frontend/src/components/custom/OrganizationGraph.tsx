@@ -31,7 +31,7 @@ export function OrganizationGraph({ data }: { data: Organization[] }) {
             children: convertToTree(node.children),
         }));
 
-    const renderCustomNode = ({ nodeDatum, toggleNode }) => (
+    const renderCustomNode = ({ nodeDatum, toggleNode }: any) => (
         <g>
             <circle
                 r={15}
