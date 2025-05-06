@@ -24,6 +24,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Run tests with pytest
+        run: |
+          pytest
+
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
         with:
