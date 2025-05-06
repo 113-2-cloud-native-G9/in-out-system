@@ -301,7 +301,7 @@ export function OrganizationEditor({ data, onChange }: Props) {
                             dark:text-green-400 dark:border-green-400"
                             onClick={() => applyEdit(org.organization_id)}
                         >
-                            儲存
+                            Save
                         </button>
                     ) : (
                         <button
@@ -412,7 +412,7 @@ export function OrganizationEditor({ data, onChange }: Props) {
                             className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
                             onClick={() => handleAdd()}
                         >
-                            新增
+                            Add
                         </button>
                     </div>
                 </div>

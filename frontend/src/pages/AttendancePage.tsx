@@ -33,7 +33,15 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Legend,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from "recharts";
 import {
     ChartConfig,
     ChartContainer,
@@ -206,7 +214,7 @@ const AttendancePage = () => {
 
             {/* 出勤記錄列表 */}
             <div
-                className="flex gap-8"
+                className="flex gap-8 border rounded-md"
                 style={{ maxHeight: "calc(100vh - 30rem)" }}
             >
                 <AttendanceTable data={displayedData} />
@@ -380,6 +388,12 @@ const AttendanceTable = ({ data }: { data: Array<AttendanceRecord> }) => {
                             {renderSortIcon("early_departure_minutes")}
                         </div>
                     </TableHead>
+                    <TableHead className="px-4 py-2">
+                        <div className="flex items-center gap-2">
+                            <ClockAlert size={16} />
+                            Attendance Bar
+                        </div>
+                    </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -435,6 +449,9 @@ const AttendanceTable = ({ data }: { data: Array<AttendanceRecord> }) => {
                                         ? `${record.early_departure_status} for ${record.early_departure_minutes} minutes`
                                         : record.early_departure_status}
                                 </TableCell>
+                                <TableCell className="px-4 py-2">
+                                    <AttendanceBar data={record} />
+                                </TableCell>
                             </TableRow>
                         </AccessLogDialog>
                     ))
@@ -474,7 +491,6 @@ const AttendanceChart = ({ data }: { data: Array<AttendanceRecord> }) => {
             );
 
         setChartData(chartData);
-        console.log(chartData);
     }, [data]);
 
     const chartConfig = {
@@ -534,6 +550,64 @@ const AttendanceChart = ({ data }: { data: Array<AttendanceRecord> }) => {
                 />
             </BarChart>
         </ChartContainer>
+    );
+};
+
+const AttendanceBar = ({ data }: { data: AttendanceRecord }) => {
+    const calcTimeDiff = (startTime: string, endTime: string) => {
+        const start = new Date(`1970-01-01T${startTime}`);
+        const end = new Date(`1970-01-01T${endTime}`);
+        const diff = end.getTime() - start.getTime();
+        const diffMinutes = Math.floor(diff / (1000 * 60));
+        return diffMinutes;
+    };
+    const chartData = [
+        {
+            name: `${data.report_date} Attendance`,
+            date: new Date(data.report_date).toLocaleDateString(),
+            work: data.total_stay_hours * 60,
+            timeBefore: calcTimeDiff("06:00", data.check_in_time),
+            timeAfter: calcTimeDiff(data.check_out_time, "20:00"),
+            late: data.late_arrival_minutes,
+            early: data.early_departure_minutes,
+        },
+        {
+            name: `${data.report_date}1221212 Attendance123`,
+            date: new Date(data.report_date).toLocaleDateString(),
+            work: data.total_stay_hours * 60,
+            timeBefore: calcTimeDiff("06:00", data.check_in_time),
+            timeAfter: calcTimeDiff(data.check_out_time, "20:00"),
+            late: data.late_arrival_minutes,
+            early: data.early_departure_minutes,
+        },
+    ];
+
+    console.log(chartData);
+
+    return (
+        <BarChart
+            data={chartData}
+            width={500}
+            height={300}
+            margin={{
+                top: 5,
+                right: 5,
+                left: 5,
+                bottom: 5,
+            }}
+            layout="horizontal"
+        >
+            <CartesianGrid stroke="#f5f5f5" />
+            <XAxis type="number" />
+            <YAxis dataKey="name" />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="timeBefore" fill="var(--chart-3)" stackId="a" />
+            <Bar dataKey="late" fill="var(--chart-1)" stackId="a" />
+            <Bar dataKey="work" fill="var(--chart-2)" stackId="a" />
+            <Bar dataKey="early" fill="var(--chart-1)" stackId="a" />
+            <Bar dataKey="timeAfter" fill="var(--chart-3)" stackId="a" />
+        </BarChart>
     );
 };
 
