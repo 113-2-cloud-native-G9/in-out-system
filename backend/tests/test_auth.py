@@ -2,7 +2,7 @@ from app.models.employee_model import EmployeeModel
 from app.models.gate_model import GateModel
 from app.models.accesslog_model import AccessLogModel
 from app.models.organization_model import OrganizationModel
-from app import db
+from app.models import db
 from datetime import datetime, timezone
 
 # 測試登入成功
