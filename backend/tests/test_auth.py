@@ -1,4 +1,7 @@
 from app.models.employee_model import EmployeeModel
+from app.models.gate_model import GateModel
+from app.models.accesslog_model import AccessLogModel
+from app.models.organization_model import OrganizationModel
 from app import db
 from datetime import datetime, timezone
 
@@ -20,9 +23,28 @@ def test_auth_login_success(client):
             updated_by="system",
             hashed_password="fake_hashed_password"
         )
-        #這邊還要塞其他資料表的資料才能測成功＃＃＃＃！！！！！！！
+        fake_accesslog = AccessLogModel(
+            employee_id="E001",
+            access_time=datetime.now(timezone.utc),
+            gate_id=1,
+        )
+        fake_gate = GateModel(
+            gate_id=1,
+            gate_name="Main Entrance",
+            direction="in",
+            gate_type="entry"
+        )
+        fake_organization = OrganizationModel(
+            organization_id="ORG001",
+            organization_name="Test Organization",
+            manager_id="E001",
+            parent_department_id="ORG001"   
+        )
 
         db.session.add(fake_employee)
+        db.session.add(fake_accesslog)
+        db.session.add(fake_gate)
+        db.session.add(fake_organization)
         db.session.commit()
 
     response = client.post('/api/v1/auth/login', json={

@@ -13,7 +13,7 @@ publisher = pubsub_v1.PublisherClient()
 topic_path = publisher.topic_path(PROJECT_ID, TOPIC_ID)
 
 # 員工與閘口資料（隨機）
-EMPLOYEE_IDS = ['E012']
+EMPLOYEE_IDS = ['E009']
 GATE_IDS = [2]
 
 def generate_test_data():

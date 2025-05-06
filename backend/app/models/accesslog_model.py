@@ -8,10 +8,4 @@ class AccessLogModel(db.Model):
     access_time = db.Column(db.DateTime, nullable=False)
     gate_id = db.Column(db.Integer, db.ForeignKey('Gate.gate_id'), nullable=False)
 
-    def to_dict(self):
-        return {
-            "log_id": self.log_id,
-            "employee_id": self.employee_id,
-            "date": self.access_time.isoformat(),
-            "gate_id": self.gate_id
-        }
+  
