@@ -5,16 +5,15 @@ on:
     branches: 
       - backend-dev
   pull_request:
-    types: [ closed ]
+    types: [closed]
     branches: 
       - main
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}  # 這裡會自動讀取 GCP_PROJECT_ID
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
   REGION: ${{ secrets.GCP_REGION }}
-  REPO: asia-east1-docker.pkg.dev  # Artifact Registry 的位置
-  SQLALCHEMY_DATABASE_URI: sqlite:///:memory:
+  REPO: asia-east1-docker.pkg.dev
 
 jobs:
   deploy:
@@ -32,6 +31,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests with pytest
+
         run: |
           cd backend 
           pytest
