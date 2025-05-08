@@ -13,7 +13,8 @@ def client():
     with app.test_client() as client:
         yield client
 
-    assert 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI'], "❗錯用非測試資料庫！"
+    print("使用的資料庫 URI：", app.config["SQLALCHEMY_DATABASE_URI"])
+    assert 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI'] 
 
     with app.app_context():
         db.session.remove()
