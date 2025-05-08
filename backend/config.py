@@ -19,3 +19,4 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = f"sqlite:///:memory:"  # 測試用記憶體資料庫
     TESTING = True
+   
