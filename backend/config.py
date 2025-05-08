@@ -17,5 +17,5 @@ class ProductionConfig(Config):
     DEBUG = False
 
 class TestingConfig(Config):
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"  # 測試用記憶體資料庫
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///:memory:"  # 測試用記憶體資料庫
     TESTING = True

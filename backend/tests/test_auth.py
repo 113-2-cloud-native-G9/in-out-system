@@ -40,10 +40,12 @@ def test_auth_login_success(client):
             manager_id="E001",
             parent_department_id="ORG001"   
         )
-
-        db.session.add(fake_employee)
-        db.session.add(fake_accesslog)
         db.session.add(fake_gate)
+        db.session.commit()
+        db.session.add(fake_employee)
+        db.session.commit()
+        db.session.add(fake_accesslog)
+        db.session.commit()
         db.session.add(fake_organization)
         db.session.commit()
 
