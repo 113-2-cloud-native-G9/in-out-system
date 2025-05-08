@@ -14,7 +14,7 @@ def client():
         yield client
 
     assert 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI'], "❗錯用非測試資料庫！"
-    
+
     with app.app_context():
         db.session.remove()
-        db.drop_all()  
+        #db.drop_all()  
