@@ -13,6 +13,7 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
   REGION: ${{ secrets.GCP_REGION }}
+  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
   REPO: asia-east1-docker.pkg.dev
 
 jobs:
