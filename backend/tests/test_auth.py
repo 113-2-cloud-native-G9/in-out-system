@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 def test_auth_login_success(client):
     with client.application.app_context():
         fake_employee = EmployeeModel(
-            employee_id="E001",
+            employee_id="E000",
             first_name="Test",
             last_name="User",
             phone_number="0912345678",
@@ -24,7 +24,7 @@ def test_auth_login_success(client):
             hashed_password="fake_hashed_password"
         )
         fake_accesslog = AccessLogModel(
-            employee_id="E001",
+            employee_id="E000",
             access_time=datetime.now(timezone.utc),
             gate_id=1,
         )
@@ -37,7 +37,7 @@ def test_auth_login_success(client):
         fake_organization = OrganizationModel(
             organization_id="ORG001",
             organization_name="Test Organization",
-            manager_id="E001",
+            manager_id="E000",
             parent_department_id="ORG001"   
         )
         db.session.add(fake_gate)
@@ -50,7 +50,7 @@ def test_auth_login_success(client):
         db.session.commit()
 
     response = client.post('/api/v1/auth/login', json={
-        "employee_id": "E001",
+        "employee_id": "E000",
         "hashed_password": "fake_hashed_password"
     })
 
@@ -74,7 +74,7 @@ def test_auth_login_missing_employee_id(client):
 # 測試缺少 hashed_password
 def test_auth_login_missing_hashed_password(client):
     response = client.post('/api/v1/auth/login', json={
-        "employee_id": "E001"
+        "employee_id": "E000"
     })
     assert response.status_code == 400
     assert "error" in response.get_json()

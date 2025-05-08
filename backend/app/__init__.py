@@ -5,7 +5,6 @@ from flask_cors import CORS
 from app.routes import initialize_routes
 from flask_jwt_extended import JWTManager
 from app.create_db import init_db
-db = SQLAlchemy()
 from dotenv import load_dotenv
 
 def create_app(config_name="development"):
