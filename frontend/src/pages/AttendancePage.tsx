@@ -10,8 +10,6 @@ import {
     ArrowUp,
     ArrowDown,
     Calendar,
-    Clock,
-    Clock9,
     DoorClosed,
     Briefcase,
     ClockAlert,
