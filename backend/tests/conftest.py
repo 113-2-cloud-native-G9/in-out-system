@@ -13,7 +13,7 @@ def client():
     with app.test_client() as client:
         yield client
 
-    print("使用的資料庫 URI：", app.config["SQLALCHEMY_DATABASE_URI"])
+    print("使用的資料庫 URI", app.config["SQLALCHEMY_DATABASE_URI"])
     assert 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI'] 
 
     with app.app_context():

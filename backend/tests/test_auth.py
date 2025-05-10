@@ -56,7 +56,6 @@ def test_auth_login_success(client):
 
     assert response.status_code == 200
     
-
 # 測試送空資料
 def test_auth_login_no_data(client):
     response = client.post('/api/v1/auth/login', json={})
