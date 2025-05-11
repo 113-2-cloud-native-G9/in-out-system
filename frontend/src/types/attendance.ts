@@ -1,7 +1,7 @@
 import { LateArrivalStatus, EarlyDepartureStatus } from './enums';
 
 export interface AttendanceRecord {
-    record_id: string | number;
+    record_id: string;
     employee_id: string;
     report_date: string; // Date as string (e.g., "2025-03-25")
     check_in_time: string; // Time as string (e.g., "08:30:00")

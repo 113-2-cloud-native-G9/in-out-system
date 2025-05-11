@@ -4,9 +4,24 @@ import {
     ChevronRight,
     Pencil,
     Trash2,
-    CirclePlus,
-    CircleX,
+    Plus,
+    Save,
+    X,
+    Building,
+    User
 } from "lucide-react";
+import { Organization } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
 
 interface Props {
     data: Organization[];
@@ -23,6 +38,7 @@ export function OrganizationEditor({ data, onChange }: Props) {
         parent_organization_id: null,
     });
     const [openAddForm, setOpenAddForm] = useState(false);
+
     const organizationList = useMemo(() => {
         const flatten = (nodes: Organization[]): Organization[] =>
             nodes.flatMap((node) => [node, ...flatten(node.children || [])]);
@@ -42,11 +58,10 @@ export function OrganizationEditor({ data, onChange }: Props) {
             !newOrgForm.manager_id ||
             !newOrgForm.parent_organization_id
         ) {
-            alert("請填寫所有欄位！");
+            alert("Please fill in all fields!");
             return;
         }
 
-        // 🔍 1. 遞迴收集所有 org IDs
         const collectAllIds = (nodes: Organization[]): string[] =>
             nodes.flatMap((node) => [
                 node.organization_id,
@@ -54,8 +69,6 @@ export function OrganizationEditor({ data, onChange }: Props) {
             ]);
 
         const allIds = collectAllIds(data);
-
-        // 🧮 2. 解析 ORG 編號並找出最大值
         const maxOrgNum = allIds.reduce((max, id) => {
             const match = id.match(/^ORG(\d{2,})$/);
             if (match) {
@@ -65,9 +78,8 @@ export function OrganizationEditor({ data, onChange }: Props) {
             return max;
         }, 0);
 
-        const nextOrgId = `ORG${(maxOrgNum + 1).toString().padStart(2, "0")}`;
+        const nextOrgId = `ORG${(maxOrgNum + 1).toString().padStart(3, "0")}`;
 
-        // 🆕 3. 建立新部門
         const newOrg: Organization = {
             organization_id: nextOrgId,
             organization_name: newOrgForm.organization_name,
@@ -78,7 +90,6 @@ export function OrganizationEditor({ data, onChange }: Props) {
             children: [],
         };
 
-        // 🌳 4. 插入新部門
         const insertToParent = (
             nodes: Organization[],
             parentId: string | null
@@ -102,7 +113,6 @@ export function OrganizationEditor({ data, onChange }: Props) {
         const updated = insertToParent(data, newOrg.parent_organization_id);
         onChange(updated);
 
-        // 🧹 5. 清空表單
         setNewOrgForm({
             organization_name: "",
             manager_id: "",
@@ -138,7 +148,6 @@ export function OrganizationEditor({ data, onChange }: Props) {
 
         let movedNode: Organization | null = null;
 
-        // 1. 移除原本的位置，並取得該 node
         const removeAndExtract = (nodes: Organization[]): Organization[] =>
             nodes
                 .map((node) => {
@@ -148,7 +157,7 @@ export function OrganizationEditor({ data, onChange }: Props) {
                             ...editedNode,
                             children: node.children,
                         };
-                        return null; // 剔除
+                        return null;
                     }
                     return {
                         ...node,
@@ -161,7 +170,6 @@ export function OrganizationEditor({ data, onChange }: Props) {
 
         if (!movedNode) return;
 
-        // 2. 插入新的位置
         const insertToParent = (
             nodes: Organization[],
             targetParentId: string | null
@@ -212,119 +220,150 @@ export function OrganizationEditor({ data, onChange }: Props) {
         return (
             <div
                 key={org.organization_id}
-                className="flex items-center border-b py-1 px-2 text-sm"
+                className="border-b border-border/50 hover:bg-secondary/5 transition-colors"
             >
-                <div className="w-5">
-                    {org.children.length > 0 && (
-                        <button
-                            onClick={() => toggleExpand(org.organization_id)}
-                        >
-                            {isExpanded ? (
-                                <ChevronDown
-                                    className="cursor-pointer"
-                                    size={16}
-                                />
-                            ) : (
-                                <ChevronRight
-                                    className="cursor-pointer"
-                                    size={16}
-                                />
-                            )}
-                        </button>
-                    )}
-                </div>
-                <div
-                    className="flex-1 pl-2"
-                    style={{ marginLeft: `${level * 1.25}rem` }}
-                >
-                    {isEditing ? (
-                        <input
-                            className="border rounded px-1 text-sm w-32"
-                            value={editForm.organization_name || ""}
-                            onChange={(e) =>
-                                handleEditChange(
-                                    "organization_name",
-                                    e.target.value
-                                )
-                            }
-                        />
-                    ) : (
-                        <span>
-                            {org.organization_name} ({org.organization_id})
-                        </span>
-                    )}
-                </div>
-                <div className="flex-1 px-2">
-                    {isEditing && (
-                        <select
-                            className="border rounded px-1 text-sm w-full"
-                            value={editForm.parent_organization_id || ""}
-                            onChange={(e) =>
-                                handleEditChange(
-                                    "parent_organization_id",
-                                    e.target.value
-                                )
-                            }
-                        >
-                            <option value="">Select Parent</option>
-                            {organizationList.map((org) => (
-                                <option
-                                    key={org.organization_id}
-                                    value={org.organization_id}
-                                >
-                                    {org.organization_name} (
-                                    {org.organization_id})
-                                </option>
-                            ))}
-                        </select>
-                    )}
-                </div>
-                <div className="w-32 px-2">
-                    {isEditing ? (
-                        <input
-                            className="border rounded px-1 text-sm w-full"
-                            value={editForm.manager_id || ""}
-                            onChange={(e) =>
-                                handleEditChange("manager_id", e.target.value)
-                            }
-                        />
-                    ) : (
-                        <span>
-                            {org.manager_first_name} {org.manager_last_name}
-                        </span>
-                    )}
-                </div>
-                <div className="flex space-x-1">
-                    {isEditing ? (
-                        <button
-                            className="text-green-600 text-xs px-2 py-0.5 border rounded cursor-pointer
-                            dark:text-green-400 dark:border-green-400"
-                            onClick={() => applyEdit(org.organization_id)}
-                        >
-                            Save
-                        </button>
-                    ) : (
-                        <button
-                            className="text-blue-600 hover:text-blue-800 cursor-pointer
-                            dark:text-blue-400 dark:hover:text-blue-300"
-                            onClick={() => handleEdit(org)}
-                        >
-                            <Pencil size={16} />
-                        </button>
-                    )}
-                    <button
-                        className={`text-red-600 hover:text-red-800
-                            dark:text-red-400 dark:hover:text-red-300
-                            ${
-                                org.children.length > 0
-                                    ? "cursor-not-allowed"
-                                    : "cursor-pointer"
-                            }`}
-                        onClick={() => handleDelete(org.organization_id)}
-                        disabled={org.children.length !== 0}
+                <div className="flex items-center py-3 px-4">
+                    {/* Expand/Collapse Button */}
+                    <div className="w-8">
+                        {org.children.length > 0 && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="p-0 h-6 w-6"
+                                onClick={() => toggleExpand(org.organization_id)}
+                            >
+                                {isExpanded ? (
+                                    <ChevronDown size={14} />
+                                ) : (
+                                    <ChevronRight size={14} />
+                                )}
+                            </Button>
+                        )}
+                    </div>
+
+                    {/* Organization Name */}
+                    <div
+                        className="flex-1 flex items-center gap-2"
+                        style={{ marginLeft: `${level * 1.5}rem` }}
                     >
-                        <Trash2 size={16} />
-                    </button>
+                        <Building className="h-4 w-4 text-muted-foreground" />
+                        {isEditing ? (
+                            <Input
+                                className="h-8 w-48"
+                                value={editForm.organization_name || ""}
+                                onChange={(e) =>
+                                    handleEditChange(
+                                        "organization_name",
+                                        e.target.value
+                                    )
+                                }
+                            />
+                        ) : (
+                            <div>
+                                <span className="font-medium">{org.organization_name}</span>
+                                <span className="text-xs text-muted-foreground ml-2">
+                                    ({org.organization_id})
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Parent Organization */}
+                    <div className="flex-1">
+                        {isEditing && (
+                            <Select
+                                value={editForm.parent_organization_id || ""}
+                                onValueChange={(value) =>
+                                    handleEditChange("parent_organization_id", value)
+                                }
+                            >
+                                <SelectTrigger className="h-8 w-full">
+                                    <SelectValue placeholder="Select Parent" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">No Parent</SelectItem>
+                                    {organizationList
+                                        .filter(o => o.organization_id !== org.organization_id)
+                                        .map((org) => (
+                                            <SelectItem
+                                                key={org.organization_id}
+                                                value={org.organization_id}
+                                            >
+                                                {org.organization_name}
+                                            </SelectItem>
+                                        ))}
+                                </SelectContent>
+                            </Select>
+                        )}
+                    </div>
+
+                    {/* Manager */}
+                    <div className="w-48 flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        {isEditing ? (
+                            <Input
+                                className="h-8"
+                                value={editForm.manager_id || ""}
+                                onChange={(e) =>
+                                    handleEditChange("manager_id", e.target.value)
+                                }
+                                placeholder="Manager ID"
+                            />
+                        ) : (
+                            <span className="text-sm">
+                                {org.manager_first_name} {org.manager_last_name}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1">
+                        {isEditing ? (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 px-2"
+                                    onClick={() => applyEdit(org.organization_id)}
+                                >
+                                    <Save className="h-4 w-4 text-green-600" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 px-2"
+                                    onClick={() => setEditingId(null)}
+                                >
+                                    <X className="h-4 w-4 text-destructive" />
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 px-2"
+                                    onClick={() => handleEdit(org)}
+                                >
+                                    <Pencil className="h-4 w-4 text-primary" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 px-2"
+                                    onClick={() => handleDelete(org.organization_id)}
+                                    disabled={org.children.length > 0}
+                                >
+                                    <Trash2
+                                        className={`h-4 w-4 ${org.children.length > 0
+                                                ? "text-muted-foreground cursor-not-allowed"
+                                                : "text-destructive"
+                                            }`}
+                                    />
+                                </Button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         );
@@ -340,85 +379,114 @@ export function OrganizationEditor({ data, onChange }: Props) {
         });
 
     return (
-        <div className="border rounded p-2 shadow text-sm">
-            <div className="text-lg font-bold mb-2 flex justify-between items-center px-3">
-                Organization Structure Editor
-                {openAddForm ? (
-                    <CircleX
-                        className="cursor-pointer "
-                        size={20}
-                        onClick={() => setOpenAddForm(false)}
-                    />
-                ) : (
-                    <CirclePlus
-                        className="cursor-pointer "
-                        size={20}
-                        onClick={() => setOpenAddForm(true)}
-                    />
-                )}
-            </div>
+        <div className="space-y-4">
+            {/* Add New Department Section */}
+            <Card className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Add New Department</h3>
+                    <Button
+                        variant={openAddForm ? "ghost" : "secondary"}
+                        size="sm"
+                        onClick={() => setOpenAddForm(!openAddForm)}
+                    >
+                        {openAddForm ? (
+                            <X className="h-4 w-4" />
+                        ) : (
+                            <Plus className="h-4 w-4" />
+                        )}
+                    </Button>
+                </div>
 
-            {openAddForm && (
-                <div className="mb-4 border rounded p-2 ">
-                    <div className="font-semibold mb-2">
-                        Create New Department
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-sm">
-                        <input
-                            className="border px-2 py-1 rounded w-32"
-                            placeholder="Name"
-                            value={newOrgForm.organization_name || ""}
-                            onChange={(e) =>
-                                setNewOrgForm((f) => ({
-                                    ...f,
-                                    organization_name: e.target.value,
-                                }))
-                            }
-                        />
-                        <select
-                            className="border px-2 py-1 rounded w-52"
-                            value={newOrgForm.parent_organization_id || ""}
-                            onChange={(e) =>
-                                setNewOrgForm((f) => ({
-                                    ...f,
-                                    parent_organization_id: e.target.value,
-                                }))
-                            }
-                        >
-                            <option value="">Select Parent</option>
-                            {organizationList.map((org) => (
-                                <option
-                                    key={org.organization_id}
-                                    value={org.organization_id}
+                {openAddForm && (
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-2">
+                                <Label>Department Name</Label>
+                                <Input
+                                    placeholder="Enter department name"
+                                    value={newOrgForm.organization_name || ""}
+                                    onChange={(e) =>
+                                        setNewOrgForm((f) => ({
+                                            ...f,
+                                            organization_name: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Parent Department</Label>
+                                <Select
+                                    value={newOrgForm.parent_organization_id || ""}
+                                    onValueChange={(value) =>
+                                        setNewOrgForm((f) => ({
+                                            ...f,
+                                            parent_organization_id: value,
+                                        }))
+                                    }
                                 >
-                                    {org.organization_name} (
-                                    {org.organization_id})
-                                </option>
-                            ))}
-                        </select>
-                        <input
-                            className="border px-2 py-1 rounded w-40"
-                            placeholder="Manager ID"
-                            value={newOrgForm.manager_id || ""}
-                            onChange={(e) =>
-                                setNewOrgForm((f) => ({
-                                    ...f,
-                                    manager_id: e.target.value,
-                                }))
-                            }
-                        />
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select parent department" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {organizationList.map((org) => (
+                                            <SelectItem
+                                                key={org.organization_id}
+                                                value={org.organization_id}
+                                            >
+                                                {org.organization_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                        <button
-                            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                            onClick={() => handleAdd()}
+                            <div className="space-y-2">
+                                <Label>Manager ID</Label>
+                                <Input
+                                    placeholder="Enter manager ID"
+                                    value={newOrgForm.manager_id || ""}
+                                    onChange={(e) =>
+                                        setNewOrgForm((f) => ({
+                                            ...f,
+                                            manager_id: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                        </div>
+
+                        <Button
+                            className="w-full"
+                            variant="secondary"
+                            onClick={handleAdd}
                         >
-                            Add
-                        </button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Department
+                        </Button>
+                    </div>
+                )}
+            </Card>
+
+            {/* Organization Tree */}
+            <Card>
+
+                <div className="bg-secondary/10 px-4 py-3 border-b">
+                    <div className="flex items-center text-sm font-medium text-muted-foreground">
+                        <div className="w-8"></div>
+                        <div className="flex-1" style={{ marginLeft: "0rem" }}>
+                            Department Name
+                        </div>
+                        <div className="w-48">Manager</div>
+                        <div className="w-20">Actions</div>
                     </div>
                 </div>
-            )}
 
-            <div className="grid grid-cols-1">{renderTree(data)}</div>
+                <div className="max-h-[500px] overflow-y-auto">
+                    {renderTree(data)}
+                </div>
+
+            </Card>
         </div>
     );
 }

@@ -7,6 +7,10 @@ interface OrganizationListResponse {
   organization: Organization[];
 }
 
+interface OrganizationTreeResponse {
+  organizations: Organization[];
+}
+
 export const organizationApi = {
   // 獲取所有組織清單 - GET /api/v1/organizations/list
   getOrganizationList: async (): Promise<Organization[]> => {
@@ -39,11 +43,13 @@ export const organizationApi = {
   },
 
   // 獲取組織結構樹 - GET /api/v1/organizations
-  getOrganizationTree: async (): Promise<any> => {
+  getOrganizationTree: async (): Promise<Organization[]> => {
     try {
-      const response = await fetchWithJwt(`${BASE_API}/organizations`, HttpMethod.GET);
+      const response = await fetchWithJwt<OrganizationTreeResponse>(`${BASE_API}/organizations`, HttpMethod.GET);
       console.log('Organization tree API response:', response);
-      return response;
+      
+      // 解構出 organizations 陣列
+      return response.organizations || [];
     } catch (error) {
       console.error('Failed to get organization tree:', error);
       throw error;

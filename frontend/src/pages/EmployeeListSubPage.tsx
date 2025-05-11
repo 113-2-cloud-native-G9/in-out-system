@@ -1,3 +1,10 @@
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 import { JSX, useState } from "react";
 import { useCreateEmployee, useUpdateEmployee } from "@/hooks/queries/useEmployee";
 // Temporarily comment out useEmployeeList while backend is not ready
@@ -17,6 +24,7 @@ import {
     ArrowUp,
     ArrowDown,
     Loader2,
+    ClipboardList,
 } from "lucide-react";
 import {
     Table,
@@ -34,6 +42,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import EditEmployeeDialog from "@/components/custom/EditEmployeeCard ";
+import AccessLogDialog from "@/components/custom/AccessLogDialog";
 import { User } from "@/types";
 // Import mock data
 import { mockEmployees } from "@/mocks/employees";
@@ -57,6 +66,7 @@ const EmployeeListPage = () => {
     const [selectedStatus, setSelectedStatus] = useState<string>("all");
     const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [sortField, setSortField] = useState<SortField>("employee_id");
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
     const itemsPerPage: number = 10;
@@ -64,12 +74,12 @@ const EmployeeListPage = () => {
     // 使用 React Query hooks
     // Temporarily use mock data for employee list
     // const { data: employees = [], isLoading, error } = useEmployeeList();
-    
+
     // 暫時使用 mock data 作為員工列表
     const employees = mockEmployees;
     const isLoading = false;
     const error = null;
-    
+
     // 使用真實的 create 和 update hooks
     const { mutate: createEmployee, isPending: isCreating } = useCreateEmployee();
     const { mutate: updateEmployee, isPending: isUpdating } = useUpdateEmployee();
@@ -175,9 +185,9 @@ const EmployeeListPage = () => {
         if (editingEmployee) {
             // Update employee
             updateEmployee(
-                { 
-                    employeeId: editingEmployee.employee_id, 
-                    data: formData 
+                {
+                    employeeId: editingEmployee.employee_id,
+                    data: formData
                 },
                 {
                     onSuccess: () => {
@@ -277,7 +287,7 @@ const EmployeeListPage = () => {
                         editType="create"
                         onSubmit={(formData) => handleEmployeeSubmit(formData, null)}
                     >
-                        <Button 
+                        <Button
                             className="cursor-pointer bg-accent hover:bg-accent/70 text-primary-foreground px-3 py-3 rounded-lg shadow-md flex items-center space-x-2 transition-all duration-300"
                             disabled={isCreating}
                         >
@@ -359,7 +369,7 @@ const EmployeeListPage = () => {
                                     Joined {renderSortIcon("hire_date")}
                                 </div>
                             </TableHead>
-                            <TableHead className="px-4 py-2">Actions</TableHead>
+                            <TableHead className="px-4 py-2 w-28">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -385,21 +395,18 @@ const EmployeeListPage = () => {
                                     <TableCell className="px-4 py-2">
                                         <span
                                             className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full 
-                        ${
-                            employee.hire_status === "active"
-                                ? "bg-sidebar-accent text-primary-foreground"
-                                : ""
-                        }
-                        ${
-                            employee.hire_status === "inactive"
-                                ? "bg-popover text-primary-foreground"
-                                : ""
-                        }
-                        ${
-                            employee.hire_status === "onleave"
-                                ? "bg-chart-1 text-primary-foreground"
-                                : ""
-                        }`}
+                        ${employee.hire_status === "active"
+                                                    ? "bg-sidebar-accent text-primary-foreground"
+                                                    : ""
+                                                }
+                        ${employee.hire_status === "inactive"
+                                                    ? "bg-popover text-primary-foreground"
+                                                    : ""
+                                                }
+                        ${employee.hire_status === "onleave"
+                                                    ? "bg-chart-1 text-primary-foreground"
+                                                    : ""
+                                                }`}
                                         >
                                             {employee.hire_status
                                                 .charAt(0)
@@ -421,9 +428,8 @@ const EmployeeListPage = () => {
                                         >
                                             <Edit
                                                 size={16}
-                                                className={`text-secondary cursor-pointer hover:text-primary ${
-                                                    isUpdating ? 'opacity-50' : ''
-                                                }`}
+                                                className={`text-secondary cursor-pointer hover:text-primary ${isUpdating ? 'opacity-50' : ''
+                                                    }`}
                                             />
                                         </EditEmployeeDialog>
                                     </TableCell>

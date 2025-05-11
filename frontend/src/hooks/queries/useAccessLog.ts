@@ -6,10 +6,11 @@ export const accessLogKeys = {
   all: ['accessLog'] as const,
   personal: () => [...accessLogKeys.all, 'personal'] as const,
   employee: (employeeId: string) => [...accessLogKeys.all, 'employee', employeeId] as const,
+  employeeDate: (employeeId: string, date: string) => [...accessLogKeys.all, 'employee', employeeId, date] as const,
 };
 
 // 獲取個人 access logs
-export const usePersonalAccessLogs = () => {
+export const usePersonalAccessLogs = (date: string) => {
   return useQuery({
     queryKey: accessLogKeys.personal(),
     queryFn: () => accessLogApi.getPersonalAccessLogs(),
@@ -23,6 +24,18 @@ export const useEmployeeAccessLogs = (employeeId: string) => {
     queryKey: accessLogKeys.employee(employeeId),
     queryFn: () => accessLogApi.getEmployeeAccessLogs(employeeId),
     enabled: !!employeeId,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+// 獲取特定員工指定日期的 access logs
+export const useEmployeeAccessLogsByDate = (employeeId: string | number, date: string) => {
+  const employeeIdStr = String(employeeId);
+  
+  return useQuery({
+    queryKey: accessLogKeys.employeeDate(employeeIdStr, date),
+    queryFn: () => accessLogApi.getEmployeeAccessLogsByDate(employeeIdStr, date),
+    enabled: !!employeeId && !!date,
     staleTime: 5 * 60 * 1000,
   });
 };

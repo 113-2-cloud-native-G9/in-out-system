@@ -1,3 +1,5 @@
+import { Organization } from "@/types";
+
 export const mockOrganizations = [
     {
         organization_id: "ORG001",
