@@ -1,14 +1,37 @@
+import { useState } from "react";
+import { OrganizationEditor } from "@/components/custom/OrganizationEditor";
+import { OrganizationGraph } from "@/components/custom/OrganizationGraph";
+import { Button } from "@/components/ui/button";
+import { mockOrganizationsWithChildren } from "@/mocks/organizations";
+
 const OrganizationStructurePage = () => {
-    
-    return (
-      <div className="px-6 py-6">
-      <h1 className="text-3xl font-bold y-">徐天佑寫這頁</h1>
-      
-      
-    </div>
-        
+    const [organizationData, setOrganizationData] = useState<Organization[]>(
+        mockOrganizationsWithChildren
     );
-  };
-  
-  export default OrganizationStructurePage;
-  
+    const handleUpload = () => {
+        console.log("Uploading organization structure...", organizationData);
+        // Handle the upload logic here
+    };
+
+    return (
+        <div className="flex gap-4 p-4 flex-wrap">
+            <div className="space-y-4 min-w-[40rem]">
+                <OrganizationEditor
+                    data={organizationData}
+                    onChange={setOrganizationData}
+                />
+                <Button
+                    className="cursor-pointer bg-accent hover:bg-accent/70 text-primary-foreground px-6 py-3 rounded-lg shadow-md flex items-center space-x-2 transition-all duration-300"
+                    onClick={handleUpload}
+                >
+                    Upload
+                </Button>
+            </div>
+            <div className="flex-1 min-w-80">
+                <OrganizationGraph data={organizationData} />
+            </div>
+        </div>
+    );
+};
+
+export default OrganizationStructurePage;

@@ -1,6 +1,5 @@
 import { JSX, useEffect, useState } from "react";
 import {
-    AttendanceRecord,
     EarlyDepartureStatus,
     LateArrivalStatus,
     AttendanceStatus,
@@ -11,8 +10,6 @@ import {
     ArrowUp,
     ArrowDown,
     Calendar,
-    Clock,
-    Clock9,
     DoorClosed,
     Briefcase,
     ClockAlert,
@@ -33,7 +30,15 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Legend,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from "recharts";
 import {
     ChartConfig,
     ChartContainer,
@@ -42,6 +47,11 @@ import {
     ChartLegend,
     ChartLegendContent,
 } from "@/components/ui/chart";
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import AccessLogDialog from "@/components/custom/AccessLogDialog";
 
 type AttendanceStatistics = {
@@ -206,7 +216,7 @@ const AttendancePage = () => {
 
             {/* 出勤記錄列表 */}
             <div
-                className="flex gap-8"
+                className="flex gap-8 border rounded-md"
                 style={{ maxHeight: "calc(100vh - 30rem)" }}
             >
                 <AttendanceTable data={displayedData} />
@@ -316,24 +326,22 @@ const AttendanceTable = ({ data }: { data: Array<AttendanceRecord> }) => {
                             Date {renderSortIcon("report_date")}
                         </div>
                     </TableHead>
-                    <TableHead
-                        className="px-4 py-2 cursor-pointer"
-                        onClick={() => handleSort("check_in_time")}
-                    >
+                    <TableHead className="px-4 py-2">
                         <div className="flex items-center gap-2">
-                            <Clock size={16} />
-                            Check-In Time {renderSortIcon("check_in_time")}
+                            <ClockAlert size={16} />
+                            Attendance Bar
                         </div>
                     </TableHead>
                     <TableHead
                         className="px-4 py-2 cursor-pointer"
-                        onClick={() => handleSort("check_out_time")}
+                        onClick={() => handleSort("total_stay_hours")}
                     >
                         <div className="flex items-center gap-2">
-                            <Clock9 size={16} />
-                            Check-Out Time {renderSortIcon("check_out_time")}
+                            <Briefcase size={16} />
+                            Working Time {renderSortIcon("total_stay_hours")}
                         </div>
                     </TableHead>
+
                     <TableHead
                         className="px-4 py-2 cursor-pointer"
                         onClick={() => handleSort("check_in_gate")}
@@ -352,34 +360,6 @@ const AttendanceTable = ({ data }: { data: Array<AttendanceRecord> }) => {
                             Check-Out Gate {renderSortIcon("check_out_gate")}
                         </div>
                     </TableHead>
-                    <TableHead
-                        className="px-4 py-2 cursor-pointer"
-                        onClick={() => handleSort("total_stay_hours")}
-                    >
-                        <div className="flex items-center gap-2">
-                            <Briefcase size={16} />
-                            Working Time {renderSortIcon("total_stay_hours")}
-                        </div>
-                    </TableHead>
-                    <TableHead
-                        className="px-4 py-2 cursor-pointer"
-                        onClick={() => handleSort("late_arrival_minutes")}
-                    >
-                        <div className="flex items-center gap-2">
-                            <ClockAlert size={16} />
-                            Late Status {renderSortIcon("late_arrival_minutes")}
-                        </div>
-                    </TableHead>
-                    <TableHead
-                        className="px-4 py-2 cursor-pointer"
-                        onClick={() => handleSort("early_departure_minutes")}
-                    >
-                        <div className="flex items-center gap-2">
-                            <ClockAlert size={16} />
-                            Early Status
-                            {renderSortIcon("early_departure_minutes")}
-                        </div>
-                    </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -396,44 +376,56 @@ const AttendanceTable = ({ data }: { data: Array<AttendanceRecord> }) => {
                                         record.report_date
                                     ).toLocaleDateString()}
                                 </TableCell>
-                                <TableCell className="px-4 py-2">
-                                    {record.check_in_time}
+                                <TableCell className="">
+                                    <HoverCard openDelay={100}>
+                                        <HoverCardTrigger className="h-full flex items-center  px-4 py-2">
+                                            <AttendanceBar data={record} />
+                                        </HoverCardTrigger>
+                                        <HoverCardContent>
+                                            <div className="flex flex-col gap-2 ">
+                                                <p className="text-sm font-bold">
+                                                    {record.report_date}
+                                                </p>
+                                                <p className="text-sm">
+                                                    Check in:{" "}
+                                                    {record.check_in_time}
+                                                </p>
+                                                <p className="text-sm">
+                                                    Check out:{" "}
+                                                    {record.check_out_time}
+                                                </p>
+                                                {record.late_arrival_minutes >
+                                                    0 && (
+                                                    <p className="text-sm text-destructive">
+                                                        Late:{" "}
+                                                        {
+                                                            record.late_arrival_minutes
+                                                        }{" "}
+                                                        minutes
+                                                    </p>
+                                                )}
+                                                {record.early_departure_minutes >
+                                                    0 && (
+                                                    <p className="text-sm text-destructive">
+                                                        Early:{" "}
+                                                        {
+                                                            record.early_departure_minutes
+                                                        }{" "}
+                                                        minutes
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </HoverCardContent>
+                                    </HoverCard>
                                 </TableCell>
                                 <TableCell className="px-4 py-2">
-                                    {record.check_out_time}
+                                    {record.total_stay_hours}
                                 </TableCell>
                                 <TableCell className="px-4 py-2">
                                     {record.check_in_gate}
                                 </TableCell>
                                 <TableCell className="px-4 py-2">
                                     {record.check_out_gate}
-                                </TableCell>
-                                <TableCell className="px-4 py-2">
-                                    {record.total_stay_hours}
-                                </TableCell>
-                                <TableCell
-                                    className={
-                                        record.late_arrival_status ===
-                                        LateArrivalStatus.Late
-                                            ? "px-4 py-2 text-destructive"
-                                            : "px-4 py-2"
-                                    }
-                                >
-                                    {record.late_arrival_minutes > 0
-                                        ? `${record.late_arrival_status} for ${record.late_arrival_minutes} minutes`
-                                        : record.late_arrival_status}
-                                </TableCell>
-                                <TableCell
-                                    className={
-                                        record.early_departure_status ===
-                                        EarlyDepartureStatus.Early
-                                            ? "px-4 py-2 text-destructive"
-                                            : "px-4 py-2"
-                                    }
-                                >
-                                    {record.early_departure_minutes > 0
-                                        ? `${record.early_departure_status} for ${record.early_departure_minutes} minutes`
-                                        : record.early_departure_status}
                                 </TableCell>
                             </TableRow>
                         </AccessLogDialog>
@@ -474,7 +466,6 @@ const AttendanceChart = ({ data }: { data: Array<AttendanceRecord> }) => {
             );
 
         setChartData(chartData);
-        console.log(chartData);
     }, [data]);
 
     const chartConfig = {
@@ -534,6 +525,53 @@ const AttendanceChart = ({ data }: { data: Array<AttendanceRecord> }) => {
                 />
             </BarChart>
         </ChartContainer>
+    );
+};
+
+const AttendanceBar = ({ data }: { data: AttendanceRecord }) => {
+    const calcTimeDiff = (startTime: string, endTime: string) => {
+        const start = new Date(`1970-01-01T${startTime}`);
+        const end = new Date(`1970-01-01T${endTime}`);
+        return Math.floor((end.getTime() - start.getTime()) / 60000);
+    };
+
+    const segments = [
+        {
+            minutes: calcTimeDiff("07:00", data.check_in_time),
+            className: "bg-gray-200 dark:bg-gray-400",
+        },
+        {
+            minutes: data.late_arrival_minutes,
+            className: "bg-red-700 dark:bg-red-400",
+        },
+        {
+            minutes: data.total_stay_hours * 60,
+            className: "bg-green-500 dark:bg-green-300",
+        },
+        {
+            minutes: data.early_departure_minutes,
+            className: "bg-red-700 dark:bg-red-400",
+        },
+        {
+            minutes: calcTimeDiff(data.check_out_time, "18:00"),
+            className: "bg-gray-200 dark:bg-gray-400",
+        },
+    ];
+
+    return (
+        <div className="min-w-[28rem] w-full h-2 flex items-stretch rounded-md overflow-hidden leading-none">
+            {segments.map((seg, idx) => (
+                <div
+                    key={idx}
+                    className={`${seg.className} h-full`}
+                    style={{
+                        flexGrow: seg.minutes,
+                        flexShrink: 0,
+                        flexBasis: 0,
+                    }}
+                />
+            ))}
+        </div>
     );
 };
 

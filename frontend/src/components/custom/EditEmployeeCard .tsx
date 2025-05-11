@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { User } from "@/types/user";
 import { mockOrganizations } from "@/mocks/organizations";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,7 +11,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogClose
+    DialogClose,
 } from "@/components/ui/dialog";
 import {
     Select,
@@ -40,9 +39,11 @@ interface EditEmployeeDialogProps {
 const hashPassword = async (password: string): Promise<string> => {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+    const hashHex = hashArray
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
     return hashHex;
 };
 
@@ -50,7 +51,7 @@ const EditEmployeeDialog = ({
     children,
     editType,
     employeeData,
-    onSubmit
+    onSubmit,
 }: EditEmployeeDialogProps) => {
     const [formData, setFormData] = useState({
         employee_id: "",
@@ -83,8 +84,8 @@ const EditEmployeeDialog = ({
                     hire_date: employeeData.hire_date,
                 });
             } else if (editType === "create") {
-                const password = '0000';
-                const hashedPassword = await hashPassword(password); 
+                const password = "0000";
+                const hashedPassword = await hashPassword(password);
                 setFormData({
                     employee_id: "",
                     hashed_password: hashedPassword,
@@ -148,11 +149,17 @@ const EditEmployeeDialog = ({
                                     handleChange("employee_id", e.target.value)
                                 }
                                 readOnly={editType === "update"}
-                                className={editType === "update" ? "cursor-not-allowed" : ""}
+                                className={
+                                    editType === "update"
+                                        ? "cursor-not-allowed"
+                                        : ""
+                                }
                             />
                         </div>
                         <div className="space-y-2">
-                            <p className="text-sm font-medium mb-1">Is Admin?</p>
+                            <p className="text-sm font-medium mb-1">
+                                Is Admin?
+                            </p>
                             <RadioGroup
                                 defaultValue={formData.is_admin ? "yes" : "no"}
                                 value={formData.is_admin ? "yes" : "no"}
@@ -162,7 +169,10 @@ const EditEmployeeDialog = ({
                                 className="flex space-x-4"
                             >
                                 <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="yes" id="admin-yes" />
+                                    <RadioGroupItem
+                                        value="yes"
+                                        id="admin-yes"
+                                    />
                                     <label
                                         htmlFor="admin-yes"
                                         className="text-sm font-medium leading-none cursor-pointer"
@@ -347,7 +357,7 @@ const EditEmployeeDialog = ({
                                         className={cn(
                                             "bg-popover/50 cursor-pointer w-full justify-start border-foreground/50 text-left font-normal",
                                             !formData.hire_date &&
-                                            "text-muted-foreground"
+                                                "text-muted-foreground"
                                         )}
                                     >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -387,9 +397,7 @@ const EditEmployeeDialog = ({
 
                 <DialogFooter className="flex justify-end space-x-2">
                     <DialogClose asChild>
-                        <Button variant="outline">
-                            Cancel
-                        </Button>
+                        <Button variant="outline">Cancel</Button>
                     </DialogClose>
                     <Button onClick={handleSubmit} variant="secondary">
                         {editType === "create" ? "Create" : "Update"}
