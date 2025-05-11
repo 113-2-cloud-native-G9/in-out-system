@@ -1,3 +1,5 @@
+import { User } from "@/types";
+
 export const mockEmployees: User[] = [
     {
         employee_id: "#EMP07",

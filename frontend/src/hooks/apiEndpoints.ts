@@ -1,5 +1,4 @@
-import { baseFetch, fetchWithJwt } from "@/hooks/apiConfig";
-import { HttpMethod } from "@/types/enums";
+import { baseFetch, fetchWithJwt, HttpMethod } from "@/hooks/apiConfig";
 
 
 const API_ENDPOINTS = {
@@ -58,6 +57,3 @@ export const api = {
         return fetchWithJwt(API_ENDPOINTS.RESET_PASSWORD, HttpMethod.POST, data);
     },
 };
-
-
-

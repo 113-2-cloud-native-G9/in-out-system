@@ -1,5 +1,5 @@
 import { fetchWithJwt, HttpMethod } from '@/hooks/apiConfig';
-import { Employee } from '@/types';
+import { Employee, User } from '@/types';
 
 const BASE_API = '/api/v1';
 
@@ -22,6 +22,11 @@ export interface EmployeeUpdateData extends Partial<EmployeeCreateData> {
 }
 
 export const employeeApi = {
+  // 獲取所有員工列表 - GET /api/v1/employee-list
+  getEmployeeList: async (): Promise<User[]> => {
+    return await fetchWithJwt<User[]>(`${BASE_API}/employee-list`, HttpMethod.GET);
+  },
+
   // 獲取單一員工資訊 - GET /api/v1/employees/{employee_id}
   getEmployee: async (employeeId: string): Promise<Employee> => {
     return await fetchWithJwt<Employee>(`${BASE_API}/employees/${employeeId}`, HttpMethod.GET);

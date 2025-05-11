@@ -5,8 +5,19 @@ import { employeeApi, EmployeeCreateData, EmployeeUpdateData } from '@/services/
 export const employeeKeys = {
   all: ['employee'] as const,
   lists: () => [...employeeKeys.all, 'list'] as const,
+  list: (filters: { search?: string; status?: string; organizationId?: string }) => 
+    [...employeeKeys.lists(), filters] as const,
   details: () => [...employeeKeys.all, 'detail'] as const,
   detail: (id: string) => [...employeeKeys.details(), id] as const,
+};
+
+// 獲取所有員工列表
+export const useEmployeeList = () => {
+  return useQuery({
+    queryKey: employeeKeys.lists(),
+    queryFn: () => employeeApi.getEmployeeList(),
+    staleTime: 5 * 60 * 1000, // 5 分鐘
+  });
 };
 
 // 獲取單一員工資訊

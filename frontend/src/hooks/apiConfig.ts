@@ -4,7 +4,8 @@ const getApiBaseUrl = (): string => {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     if (isLocalhost) {
-        return "http://localhost:8080"; // localhost (開發環境)
+        // return "http://localhost:8080"; // localhost (開發環境)
+        return 'http://127.0.0.1:8080';
     } else {
         // 這裡使用 VITE_API_BASE_URL 環境變數，並且在 production 中配置後端服務的 URL
         return import.meta.env.VITE_API_BASE_URL || 'https://in-out-system-996829019525.asia-east1.run.app'; // production API from .env file

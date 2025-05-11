@@ -1,6 +1,7 @@
 import { JSX, useState } from "react";
-import { api } from "@/hooks/apiEndpoints";
-import { mockEmployees } from "@/mocks/employees";
+import { useCreateEmployee, useUpdateEmployee } from "@/hooks/queries/useEmployee";
+// Temporarily comment out useEmployeeList while backend is not ready
+// import { useEmployeeList } from "@/hooks/queries/useEmployee";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,7 +16,8 @@ import {
     ArrowUpDown,
     ArrowUp,
     ArrowDown,
-} from "lucide-react"; // Added icons
+    Loader2,
+} from "lucide-react";
 import {
     Table,
     TableBody,
@@ -32,6 +34,9 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import EditEmployeeDialog from "@/components/custom/EditEmployeeCard ";
+import { User } from "@/types";
+// Import mock data
+import { mockEmployees } from "@/mocks/employees";
 
 // Define sort direction type
 type SortDirection = "asc" | "desc" | null;
@@ -51,15 +56,23 @@ const EmployeeListPage = () => {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [selectedStatus, setSelectedStatus] = useState<string>("all");
     const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
-    const [editingEmployee, setEditingEmployee] = useState<User | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [sortField, setSortField] = useState<SortField>("employee_id");
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
-    const [showEditCard, setShowEditCard] = useState<boolean>(false);
     const itemsPerPage: number = 10;
 
-    // Example employee data
+    // 使用 React Query hooks
+    // Temporarily use mock data for employee list
+    // const { data: employees = [], isLoading, error } = useEmployeeList();
+    
+    // 暫時使用 mock data 作為員工列表
     const employees = mockEmployees;
+    const isLoading = false;
+    const error = null;
+    
+    // 使用真實的 create 和 update hooks
+    const { mutate: createEmployee, isPending: isCreating } = useCreateEmployee();
+    const { mutate: updateEmployee, isPending: isUpdating } = useUpdateEmployee();
 
     // Get unique departments for the department filter
     const departments: string[] = [
@@ -157,24 +170,57 @@ const EmployeeListPage = () => {
         return null;
     };
 
-    // Call the appropriate API function based on editType
-    const handleEmployeeSubmit = (formData: any) => {
+    // Handle employee submit (create or update)
+    const handleEmployeeSubmit = (formData: any, editingEmployee: User | null) => {
         if (editingEmployee) {
             // Update employee
-            api.editEmployee(editingEmployee.employee_id, formData)
-                .then(() => {
-                    console.log("Employee updated successfully");
-                })
-                .catch((err) => console.error("Error updating employee:", err));
+            updateEmployee(
+                { 
+                    employeeId: editingEmployee.employee_id, 
+                    data: formData 
+                },
+                {
+                    onSuccess: () => {
+                        console.log("Employee updated successfully");
+                    },
+                    onError: (err) => {
+                        console.error("Error updating employee:", err);
+                        alert("更新員工失敗：" + err.message);
+                    }
+                }
+            );
         } else {
             // Create new employee
-            api.createEmployee(formData)
-                .then(() => {
+            createEmployee(formData, {
+                onSuccess: () => {
                     console.log("Employee created successfully");
-                })
-                .catch((err) => console.error("Error creating employee:", err));
+                },
+                onError: (err) => {
+                    console.error("Error creating employee:", err);
+                    alert("新增員工失敗：" + err.message);
+                }
+            });
         }
     };
+
+    // 載入狀態處理
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <Loader2 className="animate-spin" size={32} />
+                <span className="ml-2">載入中...</span>
+            </div>
+        );
+    }
+
+    // 錯誤處理
+    if (error) {
+        return (
+            <div className="text-center text-red-500">
+                載入失敗: 未知錯誤
+            </div>
+        );
+    }
 
     return (
         <div className="px-4">
@@ -229,13 +275,17 @@ const EmployeeListPage = () => {
                 <div className="flex items-center space-x-4">
                     <EditEmployeeDialog
                         editType="create"
-                        onSubmit={handleEmployeeSubmit}
+                        onSubmit={(formData) => handleEmployeeSubmit(formData, null)}
                     >
-                        <Button className="cursor-pointer bg-accent hover:bg-accent/70 text-primary-foreground px-3 py-3 rounded-lg shadow-md flex items-center space-x-2 transition-all duration-300">
-                            <UserPlus
-                                size={18}
-                                className="text-primary-foreground"
-                            />
+                        <Button 
+                            className="cursor-pointer bg-accent hover:bg-accent/70 text-primary-foreground px-3 py-3 rounded-lg shadow-md flex items-center space-x-2 transition-all duration-300"
+                            disabled={isCreating}
+                        >
+                            {isCreating ? (
+                                <Loader2 className="animate-spin" size={18} />
+                            ) : (
+                                <UserPlus size={18} className="text-primary-foreground" />
+                            )}
                             <span>Add Employee</span>
                         </Button>
                     </EditEmployeeDialog>
@@ -306,7 +356,7 @@ const EmployeeListPage = () => {
                             >
                                 <div className="flex items-center">
                                     <Calendar size={14} className="mr-2" />{" "}
-                                    Jonined {renderSortIcon("hire_date")}
+                                    Joined {renderSortIcon("hire_date")}
                                 </div>
                             </TableHead>
                             <TableHead className="px-4 py-2">Actions</TableHead>
@@ -367,11 +417,13 @@ const EmployeeListPage = () => {
                                         <EditEmployeeDialog
                                             editType="update"
                                             employeeData={employee}
-                                            onSubmit={handleEmployeeSubmit}
+                                            onSubmit={(formData) => handleEmployeeSubmit(formData, employee)}
                                         >
                                             <Edit
                                                 size={16}
-                                                className="text-secondary cursor-pointer hover:text-primary"
+                                                className={`text-secondary cursor-pointer hover:text-primary ${
+                                                    isUpdating ? 'opacity-50' : ''
+                                                }`}
                                             />
                                         </EditEmployeeDialog>
                                     </TableCell>

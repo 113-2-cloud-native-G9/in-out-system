@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { mockOrganizations } from "@/mocks/organizations";
+import { useOrganizationList } from "@/hooks/queries/useOrganization";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,12 +22,13 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2, AlertCircle } from "lucide-react";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { User } from "@/types";
 
 interface EditEmployeeDialogProps {
     children: React.ReactNode; // Trigger element
@@ -67,6 +68,27 @@ const EditEmployeeDialog = ({
         hire_date: "",
     });
 
+    const [open, setOpen] = useState(false);
+    const [organizationList, setOrganizationList] = useState<any[]>([]);
+
+    // 使用 React Query 獲取組織列表，增加錯誤處理
+    const { 
+        data: organizations, 
+        isLoading: organizationsLoading,
+        error: organizationsError,
+        refetch: refetchOrganizations,
+        isSuccess: organizationsSuccess
+    } = useOrganizationList();
+
+    // 當資料成功載入時，更新本地狀態
+    useEffect(() => {
+        if (organizationsSuccess && organizations) {
+            console.log('Organizations data received in component:', organizations);
+            setOrganizationList(organizations);
+        }
+    }, [organizations, organizationsSuccess]);
+
+    
     useEffect(() => {
         const updateFormData = async () => {
             if (editType === "update" && employeeData) {
@@ -118,11 +140,25 @@ const EditEmployeeDialog = ({
     const handleSubmit = () => {
         if (onSubmit) {
             onSubmit(formData);
+            setOpen(false); 
+        }
+    };
+
+    // 重試載入組織列表
+    const handleRetryOrganizations = () => {
+        refetchOrganizations();
+    };
+
+    // Dialog 開啟時重新載入組織列表
+    const handleOpenChange = (newOpen: boolean) => {
+        setOpen(newOpen);
+        if (newOpen) {
+            refetchOrganizations();
         }
     };
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="md:min-w-[50rem] min-h-[20rem]">
                 <DialogHeader>
@@ -269,30 +305,64 @@ const EditEmployeeDialog = ({
                             >
                                 Department
                             </label>
-                            <Select
-                                value={formData.organization_id}
-                                onValueChange={(value) => {
-                                    const selected = mockOrganizations.find(
-                                        (org) => org.organization_id === value
-                                    );
-                                    handleChange("organization_id", value);
-                                }}
-                            >
-                                <SelectTrigger className="border-foreground/50">
-                                    <SelectValue placeholder="Select a Department" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-background">
-                                    {mockOrganizations.map((org) => (
-                                        <SelectItem
-                                            key={org.organization_id}
-                                            value={org.organization_id}
-                                        >
-                                            {org.organization_id} -{" "}
-                                            {org.organization_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            {organizationsError ? (
+                                <div className="flex items-center justify-between p-2 border rounded-md bg-destructive/10 text-destructive">
+                                    <div className="flex items-center gap-2">
+                                        <AlertCircle size={16} />
+                                        <span className="text-sm">Failed to load departments</span>
+                                    </div>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm"
+                                        onClick={handleRetryOrganizations}
+                                    >
+                                        Retry
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Select
+                                    value={formData.organization_id}
+                                    onValueChange={(value) => {
+                                        handleChange("organization_id", value);
+                                    }}
+                                    disabled={organizationsLoading}
+                                >
+                                    <SelectTrigger className="border-foreground/50">
+                                        <SelectValue placeholder={organizationsLoading ? "Loading..." : "Select a Department"} />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-background">
+                                        {organizationsLoading ? (
+                                            <div className="flex items-center justify-center p-2">
+                                                <Loader2 className="animate-spin" size={16} />
+                                                <span className="ml-2">Loading departments...</span>
+                                            </div>
+                                        ) : organizationList.length > 0 ? (
+                                            organizationList.map((org) => (
+                                                <SelectItem
+                                                    key={org.organization_id}
+                                                    value={org.organization_id}
+                                                >
+                                                    {org.organization_id} -{" "}
+                                                    {org.organization_name}
+                                                </SelectItem>
+                                            ))
+                                        ) : (
+                                            <div className="p-4 text-sm text-muted-foreground">
+                                                <p className="font-medium mb-1">No departments available</p>
+                                                <p className="text-xs">Please check if the API is returning data</p>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    className="mt-2 w-full"
+                                                    onClick={handleRetryOrganizations}
+                                                >
+                                                    Retry Loading
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            )}
                         </div>
 
                         <div className="space-y-2">
