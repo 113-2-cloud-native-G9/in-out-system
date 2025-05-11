@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from 'react-router-dom';
-import { useUser } from "@/providers/authProvider";
 import { useTheme } from '@/providers/themeProvider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, User2, KeyRound } from "lucide-react";
 import Spinner from "@/components/custom/spinner";
 import { ForgetPasswordDialog } from "@/components/custom/ForgetPasswordDialog"
+import { useLogin } from "@/hooks/queries/useAuth";
 
 const hashPassword = async (password: string): Promise<string> => {
     const encoder = new TextEncoder();
@@ -26,29 +26,33 @@ export function LoginPage() {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isForgetPasswordDialogOpen, setIsForgetPasswordDialogOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { login } = useUser();
+    const { mutate: login, isPending } = useLogin();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
 
         try {
             if (employeeId && password) {
                 const hashedPassword = await hashPassword(password);
-                await login({ employee_id: employeeId, hashed_password: hashedPassword });
-
-                navigate('/attendance');
+                login(
+                    { 
+                        employee_id: employeeId, 
+                        hashed_password: hashedPassword 
+                    },
+                    {
+                        onError: (error) => {
+                            setError(error.message || 'Login failed. Please try again.');
+                            setPassword("");
+                        }
+                    }
+                );
             } else {
                 setError('Please enter your employee id and password');
             }
         } catch (err: any) {
-            setError('Login failed. Please try again.');
+            setError('Error hashing password. Please try again.');
             setPassword("");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -92,6 +96,7 @@ export function LoginPage() {
                                 onChange={(e) => setEmployeeId(e.target.value)}
                                 className="pl-10 bg-background border-secondary/50 transition-colors focus:border-primary/50 font-medium"
                                 placeholder="Enter your ID"
+                                disabled={isPending}
                             />
                         </div>
                     </div>
@@ -109,6 +114,7 @@ export function LoginPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="pl-10 border-secondary/50 transition-colors focus:border-primary/50 font-medium"
                                 placeholder="Enter your password"
+                                disabled={isPending}
                             />
                             <Button
                                 type="button"
@@ -116,6 +122,7 @@ export function LoginPage() {
                                 size="icon"
                                 className="absolute right-0 top-0 h-full px-3 hover:text-foreground transition-colors "
                                 onClick={() => setShowPassword(!showPassword)}
+                                disabled={isPending}
                             >
                                 {showPassword ? (
                                     <EyeOff className="h-5 w-5 text-muted hover:text-primary/50" />
@@ -129,9 +136,9 @@ export function LoginPage() {
                     <Button
                         type="submit"
                         className="w-full py-6 text-base font-medium tracking-wide bg-accent text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg"
-                        disabled={loading}
+                        disabled={isPending}
                     >
-                        {loading ? <Spinner /> : 'SIGN IN'}
+                        {isPending ? <Spinner /> : 'SIGN IN'}
                     </Button>
 
                     <div className="text-center pt-2">
@@ -152,7 +159,6 @@ export function LoginPage() {
                 onClose={() => setIsForgetPasswordDialogOpen(false)}
             />
         </Card>
-
     );
 }
 

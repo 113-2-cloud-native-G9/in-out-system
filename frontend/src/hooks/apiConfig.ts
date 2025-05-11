@@ -21,7 +21,7 @@ interface FetchOptions {
     body?: string;
 }
 
-enum HttpMethod {
+export enum HttpMethod {
     GET = 'GET',
     POST = 'POST',
     PUT = 'PUT',
@@ -45,7 +45,7 @@ const getAuthHeaders = (): HeadersInit => {
 };
 
 // 基本的 fetch 函數，供其他 API 調用使用
-export async function baseFetch<T>(endpoint: string, method: HttpMethod = HttpMethod.POST, data: any = null): Promise<T | undefined> {
+export async function baseFetch<T>(endpoint: string, method: HttpMethod = HttpMethod.POST, data: any = null): Promise<T> {
     const options: FetchOptions = { method, headers: { 'Content-Type': 'application/json' } };
     if (data) options.body = JSON.stringify(data);
     
@@ -66,16 +66,21 @@ export async function baseFetch<T>(endpoint: string, method: HttpMethod = HttpMe
 }
 
 // 使用 JWT Token 認證的 fetch 函數
-export async function fetchWithJwt<T>(endpoint: string, method: HttpMethod = HttpMethod.POST, data: any = null):  Promise<T | undefined> {
+export async function fetchWithJwt<T>(endpoint: string, method: HttpMethod = HttpMethod.POST, data: any = null): Promise<T> {
     const headers = getAuthHeaders();
     const options: FetchOptions = { method, headers };
-    if (data) options.body = JSON.stringify(data);
+    if (data && method !== HttpMethod.GET) options.body = JSON.stringify(data);
     
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-        if (!response.ok) throw new Error(`Request failed with status: ${response.status}`);
+        if (!response.ok) {
+            const errorResponse = await response.json(); 
+            const errorMessage = errorResponse?.error || 'Request failed'; 
+            throw new Error(errorMessage);
+        }
         return await response.json();
     } catch (error) {
         handleApiError(error);
+        throw error;
     }
 }

@@ -30,7 +30,7 @@ const initialUserState: UserState = {
     authState: "loading"
 };
 
-const UserContext = createContext<UserState>(initialUserState);
+export const UserContext = createContext<UserState>(initialUserState);
 
 interface UserProviderProps {
     children: ReactNode;
