@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from 'react-router-dom';
 import { useUser } from "@/providers/authProvider";
+import { useTheme } from '@/providers/themeProvider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, User2, KeyRound } from "lucide-react";
 import Spinner from "@/components/custom/spinner";
+import { ForgetPasswordDialog } from "@/components/custom/ForgetPasswordDialog"
 
 const hashPassword = async (password: string): Promise<string> => {
     const encoder = new TextEncoder();
@@ -18,10 +20,12 @@ const hashPassword = async (password: string): Promise<string> => {
 };
 
 export function LoginPage() {
+    const { theme } = useTheme();
     const [employeeId, setEmployeeId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isForgetPasswordDialogOpen, setIsForgetPasswordDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { login } = useUser();
@@ -52,8 +56,12 @@ export function LoginPage() {
         <Card className="relative w-96 overflow-hidden border-none bg-card/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-card/50">
             <CardHeader className="space-y-1">
                 <div className="flex items-center justify-center">
-                    <div className="p-3 rounded-2xl bg-background/80">
-                        <img src="/vite.svg" alt="Logo" className="h-12 w-12" />
+                    <div>
+                        <img 
+                            src={theme === 'dark' ? 'icon-dark.png' : 'icon.png'} 
+                            alt="Yoyo點點名 Logo" 
+                            className="h-12 w-12" 
+                        />
                     </div>
                 </div>
                 <CardTitle className="text-2xl text-center font-semibold tracking-tight">
@@ -130,8 +138,8 @@ export function LoginPage() {
                         <Button
                             variant="link"
                             type="button"
-                            className="text-sm text-foreground hover:text-primary transition-colors font-medium"
-                            onClick={() => navigate('/forgot-password')}
+                            className="cursor-pointer text-sm text-foreground hover:text-primary transition-colors font-medium"
+                            onClick={() => setIsForgetPasswordDialogOpen(true)}
                         >
                             Forgot Password?
                         </Button>
@@ -139,6 +147,10 @@ export function LoginPage() {
                 </form>
                 <div className="absolute inset-0 bg-gradient-to-t from-background/10 to-background/5 pointer-events-none" />
             </CardContent>
+            <ForgetPasswordDialog
+                isOpen={isForgetPasswordDialogOpen}
+                onClose={() => setIsForgetPasswordDialogOpen(false)}
+            />
         </Card>
 
     );

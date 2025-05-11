@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Bell, MenuIcon, Lock, LogOut } from "lucide-react";
 import { ModeToggle } from "@/components/custom/modeToggle";
 import { UserHead } from "@/components/custom/userHead";
+import { useTheme } from "@/providers/themeProvider"
 import { useUser } from "@/providers/authProvider";
 import { useEffect, useState, useRef } from "react";
 import { ChangePasswordDialog } from "@/components/custom/ChangePasswordDialog";
+import { ForgetPasswordDialog } from "@/components/custom/ForgetPasswordDialog";
 
 interface MenuItem {
     name: string;
@@ -29,6 +31,7 @@ const hashPassword = async (password: string): Promise<string> => {
 
 export function Menu({ className, items = [] }: MenuProps) {
     const { user, logout } = useUser();
+    const { theme } = useTheme();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
@@ -132,8 +135,15 @@ export function Menu({ className, items = [] }: MenuProps) {
                 </Button>
 
                 {/* Logo Section */}
-                <div className="flex items-center space-x-2 flex-grow">
-                    <img src="vite.svg" alt="Yoyo點點名 Logo" className="h-8 w-8" />
+                <div 
+                    className="flex items-center space-x-2 flex-grow cursor-pointer"
+                    onClick={() => window.location.href = '/attendance'}
+                >
+                    <img 
+                        src={theme === 'dark' ? 'icon-dark.png' : 'icon.png'} 
+                        alt="Yoyo點點名 Logo" 
+                        className="h-8 w-8" 
+                    />
                     <span className="font-bold text-xl text-foreground hidden sm:block">Yoyo點點名</span>
                     <span className="font-semibold text-foreground text-xs sm:text-sm">HR In & Out System</span>
                 </div>
