@@ -1,6 +1,7 @@
 import { mockEmployeesAttendance } from "@/mocks/employeeAttendance";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { EmployeeAttendance } from "@/types/attendance"
 import {
     LineChart,
     Line,

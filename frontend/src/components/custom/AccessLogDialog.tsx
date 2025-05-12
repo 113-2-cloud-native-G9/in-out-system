@@ -1,4 +1,4 @@
-import React, { JSX, useState, useMemo } from "react";
+import React, { JSX, useState, useMemo, useCallback } from "react";
 import {
     Dialog,
     DialogContent,
@@ -50,61 +50,70 @@ const AccessLogDialog = ({ children, date, userID }: AccessLogDialogProps) => {
     const [sortField, setSortField] = useState<keyof AccessLog | null>(null);
     const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
 
+    // 獲取數據的函數，只在對話框打開時調用
+    const fetchData = useCallback(async () => {
+        setIsLoading(true);
+        setIsError(false);
+        
+        try {
+            console.log('Fetching access logs for date:', date);
+            // 使用 API 獲取數據
+            const data = await accessLogApi.getPersonalAccessLogs(date);
+            
+            setIsLoading(false);
+            
+            if (data && data.length > 0) {
+                setLogs(data);
+                setUsingMockData(false);
+                console.log('Got API data:', data);
+            } else {
+                // 無數據，使用模擬數據
+                console.log('No API data, using mock data');
+                // 過濾模擬數據中指定日期的記錄
+                const selectedDate = new Date(date).toDateString();
+                const filteredMockData = mockAccessLogs.filter(log => {
+                    const logDate = new Date(log.access_time).toDateString();
+                    return logDate === selectedDate;
+                });
+                
+                setLogs(filteredMockData);
+                setUsingMockData(true);
+            }
+        } catch (error) {
+            console.error('Error fetching access logs:', error);
+            setIsLoading(false);
+            setIsError(true);
+            
+            // 錯誤時，使用模擬數據
+            const selectedDate = new Date(date).toDateString();
+            const filteredMockData = mockAccessLogs.filter(log => {
+                const logDate = new Date(log.access_time).toDateString();
+                return logDate === selectedDate;
+            });
+            
+            setLogs(filteredMockData);
+            setUsingMockData(true);
+        }
+    }, [date]);
+
     // 當對話框打開時，獲取數據
-    const handleOpenChange = async (newOpen: boolean) => {
+    const handleOpenChange = (newOpen: boolean) => {
         setOpen(newOpen);
         
         // 當對話框打開時，獲取數據
         if (newOpen) {
-            setIsLoading(true);
-            setIsError(false);
-            
-            try {
-                console.log('Fetching access logs for date:', date);
-                // 獲取數據的 API 調用
-                const data = await accessLogApi.getPersonalAccessLogs(date);
-                
-                setIsLoading(false);
-                
-                if (data && data.length > 0) {
-                    setLogs(data);
-                    setUsingMockData(false);
-                    console.log('Got API data:', data);
-                } else {
-                    // 無數據，使用模擬數據
-                    setUsingMockData(true);
-                    // 使用模擬數據
-                    setLogs(mockAccessLogs);
-                    console.log('No API data, using mock data');
-                }
-            } catch (error) {
-                console.error('Error fetching access logs:', error);
-                setIsLoading(false);
-                setIsError(true);
-                setUsingMockData(true);
-                // 錯誤時，使用模擬數據
-                setLogs(mockAccessLogs);
-            }
+            fetchData();
         }
     };
-
-    // 使用 useMemo 過濾指定日期的記錄
-    const filteredData = useMemo(() => {
-        const selectedDate = new Date(date).toDateString();
-        return logs.filter(log => {
-            const logDate = new Date(log.access_time).toDateString();
-            return logDate === selectedDate;
-        });
-    }, [logs, date]);
     
     // 使用 useMemo 處理排序
     const displayedData = useMemo(() => {
-        if (!filteredData.length) {
+        if (!logs.length) {
             return [];
         }
         
         if (sortField && sortDirection) {
-            return [...filteredData].sort((a, b) => {
+            return [...logs].sort((a, b) => {
                 // 獲取屬性值，確保不為 undefined
                 let aValue = a[sortField] || '';
                 let bValue = b[sortField] || '';
@@ -154,8 +163,8 @@ const AccessLogDialog = ({ children, date, userID }: AccessLogDialogProps) => {
             });
         }
         
-        return filteredData;
-    }, [filteredData, sortField, sortDirection]);
+        return logs;
+    }, [logs, sortField, sortDirection]);
 
     // 處理排序邏輯
     const handleSort = (field: keyof AccessLog): void => {

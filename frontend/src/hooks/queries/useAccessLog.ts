@@ -13,7 +13,7 @@ export const accessLogKeys = {
 export const usePersonalAccessLogs = (date: string) => {
   return useQuery({
     queryKey: accessLogKeys.personal(),
-    queryFn: () => accessLogApi.getPersonalAccessLogs(),
+    queryFn: () => accessLogApi.getPersonalAccessLogs(date),
     staleTime: 5 * 60 * 1000, // 5 分鐘
   });
 };
