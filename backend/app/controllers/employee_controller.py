@@ -41,7 +41,7 @@ class EmployeeAddingResource(Resource):
         data = request.get_json()
 
         try:
-            EmployeeService.add_employee(data, current_user["employee_id"])
+            EmployeeService.add_employee(data, current_user["employee_id"]) #這邏輯錯了！！！
             return {"message": "Employee added successfully"}, 201
         except ValueError as ve:
             return {'message': str(ve)}, 400
