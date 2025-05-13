@@ -41,6 +41,23 @@ class EmployeeService:
             return None
         
     @staticmethod
+    def get_all_employees():
+        try:
+            employees = EmployeeModel.query.all()
+            return [
+                {
+                    'employee_id': emp.employee_id,
+                    'first_name': emp.first_name,
+                    'last_name': emp.last_name,
+                }
+                for emp in employees
+            ]
+        except Exception as e:
+            # Log the error (assuming you have a logging system)
+            print(f"Database error while fetching all employees: {str(e)}")
+            return []
+
+    @staticmethod
     def update_employee(employee):
         try:
             db.session.commit()

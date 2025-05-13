@@ -2,7 +2,7 @@ from flask_restful import Api
 from app.controllers.accesslog_controller import GetEmployeeAccessLog, GetPersonalAccessLog, CreatePersonalAccessLog
 from app.controllers.auth_controller import Auth_Login
 from app.controllers.organization_controller import OrganizationList, GetOrganization, GetOrganizationTree
-from app.controllers.employee_controller import EmployeeResource, ResetPasswordResource, EmployeeAddingResource, EmployeeEditingResource
+from app.controllers.employee_controller import EmployeeResource, ResetPasswordResource, EmployeeAddingResource, EmployeeEditingResource, EmployeeListResource
 from app.controllers.attendance_controller import UpdateAttendance
 
 BASE_ROUTE = "/api/v1"
@@ -21,5 +21,6 @@ def initialize_routes(api: Api):
     api.add_resource(ResetPasswordResource, f"{BASE_ROUTE}/employees/reset-password")  # 重設密碼
     api.add_resource(EmployeeAddingResource, f"{BASE_ROUTE}/employees")  # 新增員工資訊
     api.add_resource(EmployeeEditingResource, f"{BASE_ROUTE}/employees/<string:employee_id>")  # 取得單一員工資訊
-    
+    api.add_resource(EmployeeListResource, f"{BASE_ROUTE}/employee-list") # 取得所有員工資訊
+
     api.add_resource(UpdateAttendance, f"{BASE_ROUTE}/attendance/update")  # 更新考勤紀錄

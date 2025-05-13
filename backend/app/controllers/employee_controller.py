@@ -27,6 +27,22 @@ class EmployeeResource(Resource):
 
         return employee_data, 200
 
+# 
+class EmployeeListResource(Resource):
+    @jwt_required()
+    def get(self):
+        current_user = get_jwt_identity()
+        is_admin = current_user["is_admin"]
+
+        if not (is_admin):
+            return {'message': 'Access denied. Only admins and managers can view this information.'}, 403
+        
+        employee_list = EmployeeService.get_all_employees()
+        
+        if not employee_list:
+            return {'message': 'No employees found'}, 404
+        
+        return employee_list, 200
 
 # post /api/v1/employees
 class EmployeeAddingResource(Resource):
@@ -90,3 +106,5 @@ class ResetPasswordResource(Resource):
             return {"message": str(pe)}, 403
         except Exception as e:
             return {"message": f"Failed to reset password: {str(e)}"}, 500
+        
+
