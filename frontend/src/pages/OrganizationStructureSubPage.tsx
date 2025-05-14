@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { OrganizationEditor } from "@/components/custom/OrganizationEditor";
 import { OrganizationGraph } from "@/components/custom/OrganizationGraph";
 import { Button } from "@/components/ui/button";
-import { useOrganizationTree } from "@/hooks/queries/useOrganization";
+import { useOrganizationTree, useUpdateOrganizationTree } from "@/hooks/queries/useOrganization";
 import { Organization } from "@/types";
 import {
     Loader2,
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { mockOrganizationsWithChildren } from "@/mocks/organizations";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const OrganizationStructurePage = () => {
     // 使用 React Query hook 獲取組織結構
@@ -35,6 +35,7 @@ const OrganizationStructurePage = () => {
     const [activeView, setActiveView] = useState<'editor' | 'graph'>('graph');
     const [editorError, setEditorError] = useState("");
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
 
     // 當資料載入完成時，設定初始資料
@@ -67,11 +68,32 @@ const OrganizationStructurePage = () => {
         }
     };
 
-    const handleUpload = () => {
-        console.log("Uploading organization structure...", organizationData);
-        // TODO: 實作上傳組織結構的 API
-        // 這裡可能需要新的 API endpoint 來更新整個組織結構
-        setHasChanges(false);
+    // 引入 useUpdateOrganizationTree hook
+    const updateOrganizationTreeMutation = useUpdateOrganizationTree();
+
+    const handleUpload = async () => {
+        try {
+            // 清除任何之前的預釋或成功訊息
+            setEditorError("");
+            setSuccessMessage("");
+            
+            console.log("Uploading organization structure...", organizationData);
+            
+            // 使用 mutateAsync 呼叫 API
+            await updateOrganizationTreeMutation.mutateAsync(organizationData);
+            
+            console.log("Organization structure updated successfully");
+            setSuccessMessage("Organization structure updated successfully!");
+            setHasChanges(false);
+            
+            // 5秒後隐藏成功訊息
+            setTimeout(() => {
+                setSuccessMessage("");
+            }, 5000);
+        } catch (error) {
+            console.error("Failed to upload organization structure:", error);
+            setEditorError(error instanceof Error ? error.message : "Unknown error occurred while saving.");
+        }
     };
 
     // 載入狀態處理
@@ -136,11 +158,20 @@ const OrganizationStructurePage = () => {
                         <Button
                             className="flex items-center gap-2"
                             onClick={handleUpload}
-                            disabled={!hasChanges}
+                            disabled={!hasChanges || updateOrganizationTreeMutation.isPending}
                             variant={hasChanges ? "destructive" : "secondary"}
                         >
-                            <Upload className="h-4 w-4" />
-                            {hasChanges ? 'Save Changes' : 'No Changes'}
+                            {updateOrganizationTreeMutation.isPending ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Upload className="h-4 w-4" />
+                                    {hasChanges ? 'Save Changes' : 'No Changes'}
+                                </>
+                            )}
                         </Button>
                     </div>
                 </div>
@@ -187,10 +218,19 @@ const OrganizationStructurePage = () => {
                                     <AlertDescription>{editorError}</AlertDescription>
                                 </Alert>
                             )}
+                            
+                            {successMessage && (
+                                <Alert variant="default" className="mb-4 bg-green-50 border-green-500 text-green-800">
+                                    <div className="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        <AlertTitle className="text-green-800 font-medium">Success</AlertTitle>
+                                    </div>
+                                    <AlertDescription className="text-green-700">{successMessage}</AlertDescription>
+                                </Alert>
+                            )}
                             <OrganizationEditor
                                 data={organizationData}
                                 onChange={(updated) => {
-                                    console.log("父層接收到更新資料：", updated);
                                     setOrganizationData(updated);
                                     setHasChanges(true);
                                 }}

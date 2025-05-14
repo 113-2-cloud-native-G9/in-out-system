@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { organizationApi } from '@/services/api/organization';
+import { Organization } from '@/types';
 
 // Query Keys
 export const organizationKeys = {
@@ -34,5 +35,20 @@ export const useOrganizationTree = () => {
     queryKey: organizationKeys.tree(),
     queryFn: () => organizationApi.getOrganizationTree(),
     staleTime: 30 * 60 * 1000,
+  });
+};
+
+// 更新組織樹
+export const useUpdateOrganizationTree = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (organizations: Organization[]) => {
+      return organizationApi.updateOrganizationTree({ organizations });
+    },
+    onSuccess: () => {
+      // 更新成功後重新獲取組織樹數據
+      queryClient.invalidateQueries({ queryKey: organizationKeys.tree() });
+    },
   });
 };

@@ -1,9 +1,3 @@
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 import { JSX, useState } from "react";
 import { useCreateEmployee, useUpdateEmployee } from "@/hooks/queries/useEmployee";
@@ -24,7 +18,6 @@ import {
     ArrowUp,
     ArrowDown,
     Loader2,
-    ClipboardList,
 } from "lucide-react";
 import {
     Table,
@@ -42,7 +35,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import EditEmployeeDialog from "@/components/custom/EditEmployeeCard ";
-import AccessLogDialog from "@/components/custom/AccessLogDialog";
 import { User } from "@/types";
 // Import mock data
 import { mockEmployees } from "@/mocks/employees";
@@ -66,10 +58,12 @@ const EmployeeListPage = () => {
     const [selectedStatus, setSelectedStatus] = useState<string>("all");
     const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [sortField, setSortField] = useState<SortField>("employee_id");
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
     const itemsPerPage: number = 10;
+
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     // 使用 React Query hooks
     // Temporarily use mock data for employee list
@@ -182,6 +176,17 @@ const EmployeeListPage = () => {
 
     // Handle employee submit (create or update)
     const handleEmployeeSubmit = (formData: any, editingEmployee: User | null) => {
+        setErrorMessage(null);
+
+        const requiredFields = ["first_name", "last_name", "email", "job_title", "organization_name"];
+        const missingFields = requiredFields.filter(field => !formData[field] || formData[field].trim() === "");
+      
+        if (missingFields.length > 0) {
+          setErrorMessage(`Please fill in all fields`);
+          return; 
+        }
+      
+
         if (editingEmployee) {
             // Update employee
             updateEmployee(
@@ -191,24 +196,26 @@ const EmployeeListPage = () => {
                 },
                 {
                     onSuccess: () => {
-                        console.log("Employee updated successfully");
+                        setSuccessMessage("Update Employee Successfully");
+                        setErrorMessage(null);
                     },
                     onError: (err) => {
-                        console.error("Error updating employee:", err);
-                        alert("更新員工失敗：" + err.message);
-                    }
+                        setErrorMessage("Update Employee Failed" + err.message);
+                        setSuccessMessage(null);
+                    },
                 }
             );
         } else {
             // Create new employee
             createEmployee(formData, {
                 onSuccess: () => {
-                    console.log("Employee created successfully");
+                    setSuccessMessage("Create Employee Successfully");
+                    setErrorMessage(null);
                 },
                 onError: (err) => {
-                    console.error("Error creating employee:", err);
-                    alert("新增員工失敗：" + err.message);
-                }
+                    setErrorMessage("Create Employee Failed" + err.message);
+                    setSuccessMessage(null);
+                },
             });
         }
     };
@@ -218,7 +225,7 @@ const EmployeeListPage = () => {
         return (
             <div className="flex items-center justify-center h-full">
                 <Loader2 className="animate-spin" size={32} />
-                <span className="ml-2">載入中...</span>
+                <span className="ml-2">Loading...</span>
             </div>
         );
     }
@@ -227,13 +234,40 @@ const EmployeeListPage = () => {
     if (error) {
         return (
             <div className="text-center text-red-500">
-                載入失敗: 未知錯誤
+                Loading Failed
             </div>
         );
     }
 
     return (
         <div className="px-4">
+            {errorMessage && (
+                <div className="fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded shadow-md z-50 flex items-center">
+                    <span>{errorMessage}</span>
+                    <button
+                        onClick={() => setErrorMessage(null)}
+                        className="ml-4 font-bold cursor-pointer"
+                        aria-label="Close alert"
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
+
+            {/* 成功訊息 */}
+            {successMessage && (
+                <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-md z-50 flex items-center">
+                    <span>{successMessage}</span>
+                    <button
+                        onClick={() => setSuccessMessage(null)}
+                        className="ml-4 font-bold cursor-pointer"
+                        aria-label="Close alert"
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
+
             <div className="flex justify-between mb-4">
                 <div className="flex items-center space-x-4">
                     {/* Search input */}
