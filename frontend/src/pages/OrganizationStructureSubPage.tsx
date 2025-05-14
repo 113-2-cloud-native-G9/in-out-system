@@ -4,11 +4,11 @@ import { OrganizationGraph } from "@/components/custom/OrganizationGraph";
 import { Button } from "@/components/ui/button";
 import { useOrganizationTree } from "@/hooks/queries/useOrganization";
 import { Organization } from "@/types";
-import { 
-    Loader2, 
-    Building2, 
-    Network, 
-    Upload, 
+import {
+    Loader2,
+    Building2,
+    Network,
+    Upload,
     Settings,
     AlertCircle,
     RefreshCw
@@ -20,7 +20,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 const OrganizationStructurePage = () => {
     // 使用 React Query hook 獲取組織結構
     const { data: initialData, isLoading, error, refetch } = useOrganizationTree();
-    
+
     // Debug logging
     console.log('Organization Tree Page Debug:', {
         initialData,
@@ -29,10 +29,13 @@ const OrganizationStructurePage = () => {
         dataType: typeof initialData,
         dataLength: Array.isArray(initialData) ? initialData.length : 'not array',
     });
-    
+
     const [organizationData, setOrganizationData] = useState<Organization[]>([]);
     const [hasChanges, setHasChanges] = useState(false);
     const [activeView, setActiveView] = useState<'editor' | 'graph'>('graph');
+    const [editorError, setEditorError] = useState("");
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
 
     // 當資料載入完成時，設定初始資料
     useEffect(() => {
@@ -43,22 +46,25 @@ const OrganizationStructurePage = () => {
             dataLength: Array.isArray(initialData) ? initialData.length : 'not array',
         });
 
-        console.log('Using mock data for organization structure');
-        setOrganizationData(mockOrganizationsWithChildren);
-        
-        // if (initialData && Array.isArray(initialData) && initialData.length > 0) {
-        //     console.log('Setting organization data from API');
-        //     setOrganizationData(initialData);
-        // } else if (!isLoading) {
-        //     // 如果沒有資料或資料為空，使用 mock 資料
-        //     console.log('Using mock data for organization structure');
-        //     setOrganizationData(mockOrganizationsWithChildren);
-        // }
+
+
+        if (initialData && Array.isArray(initialData) && initialData.length > 0) {
+            console.log('Setting organization data from API');
+            setOrganizationData(initialData);
+        } else if (!isLoading) {
+            // 如果沒有資料或資料為空，使用 mock 資料
+            console.log('Using mock data for organization structure');
+            setOrganizationData(mockOrganizationsWithChildren);
+        }
     }, [initialData, isLoading]);
 
-    const handleDataChange = (newData: Organization[]) => {
-        setOrganizationData(newData);
-        setHasChanges(true);
+    const handleRefresh = async () => {
+        try {
+            setIsRefreshing(true);
+            await refetch();
+        } finally {
+            setIsRefreshing(false);
+        }
     };
 
     const handleUpload = () => {
@@ -69,7 +75,7 @@ const OrganizationStructurePage = () => {
     };
 
     // 載入狀態處理
-    if (isLoading) {
+    if (isLoading || isRefreshing) {
         return (
             <div className="flex items-center justify-center h-full min-h-[500px]">
                 <div className="text-center">
@@ -90,7 +96,7 @@ const OrganizationStructurePage = () => {
                         Failed to load organization structure: {error.message}
                     </AlertDescription>
                 </Alert>
-                <Button 
+                <Button
                     onClick={() => refetch()}
                     className="flex items-center gap-2"
                 >
@@ -115,23 +121,23 @@ const OrganizationStructurePage = () => {
                             <p className="text-muted-foreground">Manage and visualize your company hierarchy</p>
                         </div>
                     </div>
-                    
+
                     {/* Action Buttons */}
                     <div className="flex items-center gap-3">
                         <Button
                             variant="outline"
                             className="flex items-center gap-2"
-                            onClick={() => refetch()}
+                            onClick={handleRefresh}
                         >
                             <RefreshCw className="h-4 w-4" />
                             Refresh
                         </Button>
-                        
+
                         <Button
                             className="flex items-center gap-2"
                             onClick={handleUpload}
                             disabled={!hasChanges}
-                            variant={hasChanges ? "default" : "secondary"}
+                            variant={hasChanges ? "destructive" : "secondary"}
                         >
                             <Upload className="h-4 w-4" />
                             {hasChanges ? 'Save Changes' : 'No Changes'}
@@ -175,11 +181,23 @@ const OrganizationStructurePage = () => {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
+                            {editorError && (
+                                <Alert variant="destructive" className="mb-4">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertDescription>{editorError}</AlertDescription>
+                                </Alert>
+                            )}
                             <OrganizationEditor
                                 data={organizationData}
-                                onChange={handleDataChange}
+                                onChange={(updated) => {
+                                    console.log("父層接收到更新資料：", updated);
+                                    setOrganizationData(updated);
+                                    setHasChanges(true);
+                                }}
+                                onError={setEditorError}
                             />
                         </CardContent>
+
                     </Card>
                 </div>
 

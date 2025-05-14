@@ -240,8 +240,8 @@ export function OrganizationGraph({ data }: { data: Organization[] }) {
       <Card className="w-full h-[calc(100vh-15rem)]">
         <CardContent className="flex items-center justify-center h-full">
           <div className="text-center space-y-4">
-            <Network className="h-16 w-16 mx-auto text-gray-400" />
-            <p className="text-gray-500">No organization data available</p>
+            <Network className="h-16 w-16 mx-auto text-accent-foreground" />
+            <p>No organization data available</p>
           </div>
         </CardContent>
       </Card>
