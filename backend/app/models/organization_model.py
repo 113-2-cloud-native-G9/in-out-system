@@ -5,5 +5,5 @@ class OrganizationModel(db.Model):
 
     organization_id = db.Column(db.String(50), primary_key=True)
     organization_name = db.Column(db.String(255), nullable=False, unique=True)
-    manager_id = db.Column(db.String(50), db.ForeignKey('Employee.employee_id'), nullable=False)
-    parent_department_id = db.Column(db.String(50), db.ForeignKey('Organization.organization_id'), nullable=False)
+    manager_id = db.Column(db.String(50), db.ForeignKey('Employee.employee_id'), nullable=False)  # 確保 manager_id 與 EmployeeModel 一致
+    parent_department_id = db.Column(db.String(50), db.ForeignKey('Organization.organization_id'), nullable=True)  # 設置為 nullable=True
