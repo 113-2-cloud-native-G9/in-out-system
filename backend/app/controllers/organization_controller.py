@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.organization_service import OrganizationService
+from flask import request
 
 
 # GET /api/v1/organizations/list
@@ -39,3 +40,15 @@ class GetOrganizationTree(Resource):
 
         return OrganizationService.get_organization_tree()
 
+# DELETE /api/v1/organizations/<organization_id>
+class DeleteOrganization(Resource):
+    @jwt_required()
+    def delete(self, organization_id):
+        claims = get_jwt_identity()
+
+        # 限定只能 Administrator 執行
+        if not claims["is_admin"]:
+            return {"error": "Only Administrator can delete organizations."}, 403
+
+        # 呼叫 service 做實際刪除
+        return OrganizationService.delete_organization(organization_id)
