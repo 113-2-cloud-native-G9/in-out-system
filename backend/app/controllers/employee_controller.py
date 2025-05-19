@@ -28,7 +28,7 @@ class EmployeeResource(Resource):
 
         return employee_data, 200
 
-# 
+# get /api/v1/employees-list
 class EmployeeListResource(Resource):
     @jwt_required()
     def get(self):
