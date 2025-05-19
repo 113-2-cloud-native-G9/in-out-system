@@ -36,7 +36,7 @@ class EmployeeListResource(Resource):
         is_admin = current_user["is_admin"]
 
         if not (is_admin):
-            return {'message': 'Access denied. Only admins and managers can view this information.'}, 403
+            return {'message': 'Access denied. Only admins can view this information.'}, 403
         
         employee_list = EmployeeService.get_all_employees()
         
@@ -65,7 +65,7 @@ class EmployeeAddingResource(Resource):
                 return {'message': 'Invalid hire_date format. Use ISO8601 date string.'}, 400
 
         try:
-            EmployeeService.add_employee(data, current_user["employee_id"]) #這邏輯錯了！！！
+            EmployeeService.add_employee(data, current_user["employee_id"]) 
             return {"message": "Employee added successfully"}, 201
         except ValueError as ve:
             return {'message': str(ve)}, 400
