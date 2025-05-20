@@ -205,22 +205,34 @@ class AttendanceService:
     
 
     #取得組織出勤紀錄
+    #新版本：改成回傳month的出席紀錄
     @staticmethod
-    def get_attendance_by_organization(organization_id):
+    def get_attendance_by_organization(organization_id, month):
+        # ✅ 新增：月份參數
+        try:
+            start_date = datetime.strptime(month, "%Y-%m")
+            end_date = datetime(start_date.year, start_date.month + 1, 1)
+        except ValueError:
+            return {"error": "Invalid month format, use YYYY-MM"}, 400
+
+        # 查詢組織內所有員工
         employees = EmployeeModel.query.filter_by(organization_id=organization_id).all()
         if not employees:
-            return {"error": "No employees found for the given organization."}, 404
+            return [], 200  # ✅ 改：沒有員工也回傳空陣列，而不是 404
 
         organization_records = []
 
         for employee in employees:
-            attendance_records = AttendanceRecordModel.query.filter_by(
-                employee_id=employee.employee_id
+            # ✅ 修改：加上月份條件
+            attendance_records = AttendanceRecordModel.query.filter(
+                AttendanceRecordModel.employee_id == employee.employee_id,
+                AttendanceRecordModel.report_date >= start_date,
+                AttendanceRecordModel.report_date < end_date
             ).order_by(AttendanceRecordModel.report_date.desc()).all()
 
             records = []
             for record in attendance_records:
-                # 預設值
+                # 遲到與早退預設值
                 late_arrival_status = "On time"
                 late_arrival_minutes = 0
                 early_departure_status = "On time"
@@ -263,5 +275,4 @@ class AttendanceService:
                 "records": records
             })
 
-        # 新版：最外層就直接回傳 list
         return organization_records, 200

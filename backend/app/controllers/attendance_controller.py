@@ -22,15 +22,15 @@ class UpdateAttendance(Resource):
 class EmployeeAttendanceController(Resource):
     @jwt_required()
     def get(self, employee_id):
-        # 驗證請求參數
-        month = request.args.get('month')
-        if not month:
-            return {"error": "Missing month parameter."}, 400
-
         # 驗證角色（這裡可以讓 Administrator、Employee 和 Manager 都可以訪問）
         claims = get_jwt_identity()
         if not (claims["is_admin"] or claims["is_manager"] or claims["employee_id"] == employee_id):
             return {"error": "Unauthorized access."}, 403
+        
+        # 驗證請求參數
+        month = request.args.get('month')
+        if not month:
+            return {"error": "Missing month parameter."}, 400
 
         # 調用 Service 層來獲取出勤紀錄
         try:
@@ -38,7 +38,9 @@ class EmployeeAttendanceController(Resource):
         except Exception as e:
             return {"error": f"Failed to get attendance: {str(e)}"}, 500
         
-#GET /api/v1/attendance/organizations/{organization_id}
+        
+#新版本：改得跟上面那支的呼叫格式一樣！
+#GET /api/v1/attendance/organizations/{organization_id}?month=YYYY-MM
 class OrganizationAttendanceController(Resource):
     @jwt_required()
     def get(self, organization_id):
@@ -46,11 +48,15 @@ class OrganizationAttendanceController(Resource):
         claims = get_jwt_identity()
         if not (claims["is_admin"] or claims["is_manager"]):
             return {"error": "Unauthorized access."}, 403  # 只有admin和manager有權限
+        
+        month = request.args.get('month')
+        if not month:
+            return {"error": "Missing month parameter."}, 400
 
         # 呼叫 service 層處理具體的邏輯，這裡不再使用 month 參數，直接查詢所有歷史出勤紀錄
         try:
             # 解包 service 回傳的 list 和 status
-            attendance_list, status = AttendanceService.get_attendance_by_organization(organization_id)
+            attendance_list, status = AttendanceService.get_attendance_by_organization(organization_id, month)
             # 最外層直接回傳 List
             return attendance_list, status
 
