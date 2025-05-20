@@ -165,8 +165,8 @@ class AttendanceService:
             early_departure_minutes = 0
 
             # 設定上班時間為 08:00 AM 和下班時間為 05:00 PM
-            work_start_time = record.check_in_time.replace(hour=8, minute=0, second=0, microsecond=0) if record.check_in_time else None
-            work_end_time = record.check_out_time.replace(hour=17, minute=0, second=0, microsecond=0) if record.check_out_time else None
+            work_start_time = record.check_in_time.replace(hour=8, minute=30, second=0, microsecond=0) if record.check_in_time else None
+            work_end_time = record.check_out_time.replace(hour=17, minute=30, second=0, microsecond=0) if record.check_out_time else None
 
             # 遲到判斷
             if record.check_in_time and work_start_time and record.check_in_time > work_start_time:
@@ -240,7 +240,7 @@ class AttendanceService:
 
                 # 計算遲到
                 if record.check_in_time:
-                    work_start = record.check_in_time.replace(hour=8, minute=0, second=0, microsecond=0)
+                    work_start = record.check_in_time.replace(hour=8, minute=30, second=0, microsecond=0)
                     if record.check_in_time > work_start:
                         delta = record.check_in_time - work_start
                         late_arrival_status = "Late"
@@ -248,7 +248,7 @@ class AttendanceService:
 
                 # 計算早退
                 if record.check_out_time:
-                    work_end = record.check_out_time.replace(hour=17, minute=0, second=0, microsecond=0)
+                    work_end = record.check_out_time.replace(hour=17, minute=30, second=0, microsecond=0)
                     if record.check_out_time < work_end:
                         delta = work_end - record.check_out_time
                         early_departure_status = "Early"
