@@ -256,7 +256,7 @@ def test_update_nonexistent_employee(client):
 def test_reset_password_success(client):
     with client.application.app_context():
         token = create_access_token(identity={
-            "employee_id": "E000",
+            "employee_id": "E001",
             "is_admin": True,
             "is_manager": True,
         })
@@ -281,7 +281,6 @@ def test_reset_password_success(client):
         db.session.commit()
 
     password_data = {
-        "employee_id": "E001",
         "original_hashed_password": "fake_hashed_password",
         "new_hashed_password": "new_pass"
     }
@@ -304,7 +303,6 @@ def test_reset_password_employee_not_found(client):
     headers = {"Authorization": f"Bearer {token}"}
 
     password_data = {
-        "employee_id": "nonexistent_emp",
         "original_hashed_password": "anything",
         "new_hashed_password": "new_pass"
     }
@@ -367,10 +365,22 @@ def test_get_employee_list_success(client):
 
     headers = {"Authorization": f"Bearer {token}"}
     response = client.get('/api/v1/employee-list', headers=headers)
+    data = response.get_json()
+
     assert response.status_code == 200
-    assert isinstance(response.json, list)
-    assert any(emp['employee_id'] == 'E001' for emp in response.json)
-    assert any(emp['employee_id'] == 'E002' for emp in response.json)
+    assert isinstance(data, dict)
+    assert 'employee_list' in data
+    employee_list = data['employee_list']
+    assert isinstance(employee_list, list), "'employee_list' should be a list"
+
+    for employee in employee_list:
+        assert isinstance(employee, dict), "Each employee should be a dictionary"
+        assert 'employee_id' in employee, "'employee_id' is missing in employee"
+        assert 'employee_first_name' in employee, "'employee_first_name' is missing in employee"
+        assert 'employee_last_name' in employee, "'employee_last_name' is missing in employee"
+        assert isinstance(employee['employee_id'], str), "'employee_id' should be a string"
+        assert isinstance(employee['employee_first_name'], str), "'employee_first_name' should be a string"
+        assert isinstance(employee['employee_last_name'], str), "'employee_last_name' should be a string"
 
 def test_get_employee_list_access_denied(client):
     
@@ -400,6 +410,7 @@ def test_get_employee_list_no_employees_found(client):
 
     headers = {"Authorization": f"Bearer {token}"}
     response = client.get('/api/v1/employee-list', headers=headers)
-    assert response.status_code == 404
     assert response.is_json
     assert response.json['message'] == 'No employees found'
+
+    assert response.status_code == 404

@@ -38,12 +38,12 @@ class EmployeeListResource(Resource):
         if not (is_admin):
             return {'message': 'Access denied. Only admins can view this information.'}, 403
         
-        employee_list = EmployeeService.get_all_employees()
+        data = EmployeeService.get_all_employees() # json
         
-        if not employee_list:
+        if not data or not data.get("employee_list"):
             return {'message': 'No employees found'}, 404
         
-        return employee_list, 200
+        return data, 200
 
 # post /api/v1/employees
 class EmployeeAddingResource(Resource):
@@ -92,18 +92,21 @@ class EmployeeEditingResource(Resource):
             return {"message": f"Failed to update employee: {str(e)}"}, 500
 
 
-# post /api/v1/employees/reset-password
+# # post /api/v1/employees/reset-password 
 class ResetPasswordResource(Resource):
     @jwt_required()
     def post(self):
         current_user = get_jwt_identity()
-        is_admin = current_user["is_admin"]
+        employee_id = current_user["employee_id"]
 
+        employee = EmployeeService.get_employee_by_id(employee_id)
+        if not employee:
+            return {"message": "Employee not found."}, 400
+        
         data = request.get_json()
         try:
             EmployeeService.reset_password(
-                current_user=current_user,
-                employee_id=data.get("employee_id"),
+                employee_id=employee_id,
                 original_hashed_password=data.get("original_hashed_password"),
                 new_hashed_password=data.get("new_hashed_password")
             )
@@ -114,5 +117,3 @@ class ResetPasswordResource(Resource):
             return {"message": str(pe)}, 403
         except Exception as e:
             return {"message": f"Failed to reset password: {str(e)}"}, 500
-        
-
