@@ -97,13 +97,12 @@ class ResetPasswordResource(Resource):
     @jwt_required()
     def post(self):
         current_user = get_jwt_identity()
-        is_admin = current_user["is_admin"]
+        employee_id = current_user["employee_id"]
 
         data = request.get_json()
         try:
             EmployeeService.reset_password(
-                current_user=current_user,
-                employee_id=data.get("employee_id"),
+                employee_id=employee_id,
                 original_hashed_password=data.get("original_hashed_password"),
                 new_hashed_password=data.get("new_hashed_password")
             )
