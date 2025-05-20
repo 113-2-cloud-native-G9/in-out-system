@@ -92,7 +92,7 @@ class EmployeeEditingResource(Resource):
             return {"message": f"Failed to update employee: {str(e)}"}, 500
 
 
-# post /api/v1/employees/reset-password
+# # post /api/v1/employees/reset-password 
 class ResetPasswordResource(Resource):
     @jwt_required()
     def post(self):
@@ -111,9 +111,9 @@ class ResetPasswordResource(Resource):
                 new_hashed_password=data.get("new_hashed_password")
             )
             return {"message": "Password reset successfully."}, 200
+        except ValueError as ve:
+            return {"message": str(ve)}, 400
         except PermissionError as pe:
             return {"message": str(pe)}, 403
         except Exception as e:
             return {"message": f"Failed to reset password: {str(e)}"}, 500
-        
-

@@ -44,6 +44,7 @@ class EmployeeService:
     def get_all_employees():
         try:
             employees = EmployeeModel.query.all()
+
             return { 
                 'employee_list': [
                     {
@@ -57,7 +58,6 @@ class EmployeeService:
         except Exception as e:
             # Log the error (assuming you have a logging system)
             print(f"Database error while fetching all employees: {str(e)}")
-            return []
 
     @staticmethod
     def update_employee(employee):
@@ -129,17 +129,13 @@ class EmployeeService:
             raise e
         
     @staticmethod
-    def reset_password(current_user, employee_id, original_hashed_password, new_hashed_password):
+    def reset_password(employee_id, original_hashed_password, new_hashed_password):
         if not original_hashed_password or not new_hashed_password:
             raise ValueError("Both original and new passwords are required.")
 
         employee = EmployeeModel.query.filter_by(employee_id=employee_id).first()
         if not employee:
             raise ValueError("Employee not found.")
-
-        is_admin = current_user["is_admin"]
-        if not is_admin and employee.employee_id != current_user["employee_id"]:
-            raise PermissionError("Access denied. You can only reset your own password.")
 
         if employee.hashed_password != original_hashed_password:
             raise PermissionError("Original password is incorrect.")
