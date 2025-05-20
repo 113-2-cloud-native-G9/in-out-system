@@ -99,6 +99,10 @@ class ResetPasswordResource(Resource):
         current_user = get_jwt_identity()
         employee_id = current_user["employee_id"]
 
+        employee = EmployeeService.get_employee_by_id(employee_id)
+        if not employee:
+            return {"message": "Employee not found"}, 400
+        
         data = request.get_json()
         try:
             EmployeeService.reset_password(
@@ -107,8 +111,6 @@ class ResetPasswordResource(Resource):
                 new_hashed_password=data.get("new_hashed_password")
             )
             return {"message": "Password reset successfully."}, 200
-        except ValueError as ve:
-            return {"message": str(ve)}, 400
         except PermissionError as pe:
             return {"message": str(pe)}, 403
         except Exception as e:
