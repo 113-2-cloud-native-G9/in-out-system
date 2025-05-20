@@ -256,7 +256,7 @@ def test_update_nonexistent_employee(client):
 def test_reset_password_success(client):
     with client.application.app_context():
         token = create_access_token(identity={
-            "employee_id": "E000",
+            "employee_id": "E001",
             "is_admin": True,
             "is_manager": True,
         })
@@ -281,7 +281,6 @@ def test_reset_password_success(client):
         db.session.commit()
 
     password_data = {
-        "employee_id": "E001",
         "original_hashed_password": "fake_hashed_password",
         "new_hashed_password": "new_pass"
     }
@@ -304,7 +303,6 @@ def test_reset_password_employee_not_found(client):
     headers = {"Authorization": f"Bearer {token}"}
 
     password_data = {
-        "employee_id": "nonexistent_emp",
         "original_hashed_password": "anything",
         "new_hashed_password": "new_pass"
     }
