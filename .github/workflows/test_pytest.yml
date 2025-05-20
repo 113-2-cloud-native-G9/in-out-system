@@ -1,0 +1,29 @@
+# .github/workflows/test-dev.yml
+name: Run Backend Tests (Dev Only)
+
+on:
+  push:
+    branches:
+      - backend-dev
+env:
+    JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+
+jobs:
+  test:
+    name: Run pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests with pytest
+        run: |
+          cd backend
+          pytest

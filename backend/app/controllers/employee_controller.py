@@ -4,6 +4,7 @@ from app.services.employee_service import EmployeeService
 from datetime import datetime  # Import datetime for timestamps
 from app.models.employee_model import EmployeeModel  # Import EmployeeModel
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from dateutil.parser import isoparse  # pip install python-dateutil
 
 # get /api/v1/employees/<string:employee_id>
 class EmployeeResource(Resource):
@@ -27,6 +28,22 @@ class EmployeeResource(Resource):
 
         return employee_data, 200
 
+# get /api/v1/employees-list
+class EmployeeListResource(Resource):
+    @jwt_required()
+    def get(self):
+        current_user = get_jwt_identity()
+        is_admin = current_user["is_admin"]
+
+        if not (is_admin):
+            return {'message': 'Access denied. Only admins can view this information.'}, 403
+        
+        data = EmployeeService.get_all_employees() # json
+        
+        if not data or not data.get("employee_list"):
+            return {'message': 'No employees found'}, 404
+        
+        return data, 200
 
 # post /api/v1/employees
 class EmployeeAddingResource(Resource):
@@ -40,8 +57,15 @@ class EmployeeAddingResource(Resource):
 
         data = request.get_json()
 
+        # Parse hire_date string into datetime object
+        if 'hire_date' in data:
+            try:
+                data['hire_date'] = isoparse(data['hire_date'])
+            except Exception:
+                return {'message': 'Invalid hire_date format. Use ISO8601 date string.'}, 400
+
         try:
-            EmployeeService.add_employee(data, current_user["employee_id"])
+            EmployeeService.add_employee(data, current_user["employee_id"]) 
             return {"message": "Employee added successfully"}, 201
         except ValueError as ve:
             return {'message': str(ve)}, 400
@@ -68,18 +92,21 @@ class EmployeeEditingResource(Resource):
             return {"message": f"Failed to update employee: {str(e)}"}, 500
 
 
-# post /api/v1/employees/reset-password
+# # post /api/v1/employees/reset-password 
 class ResetPasswordResource(Resource):
     @jwt_required()
     def post(self):
         current_user = get_jwt_identity()
-        is_admin = current_user["is_admin"]
+        employee_id = current_user["employee_id"]
 
+        employee = EmployeeService.get_employee_by_id(employee_id)
+        if not employee:
+            return {"message": "Employee not found."}, 400
+        
         data = request.get_json()
         try:
             EmployeeService.reset_password(
-                current_user=current_user,
-                employee_id=data.get("employee_id"),
+                employee_id=employee_id,
                 original_hashed_password=data.get("original_hashed_password"),
                 new_hashed_password=data.get("new_hashed_password")
             )

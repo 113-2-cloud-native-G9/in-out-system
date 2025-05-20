@@ -3,17 +3,18 @@ name: Deploy Backend to GCP Cloud Run
 on:
   push:
     branches: 
-      - backend-dev
-  pull_request:
-    types: [ closed ]
+      - main
+  pull_request: 
+    types: [closed]
     branches: 
       - main
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}  # 這裡會自動讀取 GCP_PROJECT_ID
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
   REGION: ${{ secrets.GCP_REGION }}
-  REPO: asia-east1-docker.pkg.dev  # Artifact Registry 的位置
+  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+  REPO: asia-east1-docker.pkg.dev
 
 jobs:
   deploy:
@@ -23,6 +24,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          cd backend 
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests with pytest
+        run: |
+          pytest
 
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1

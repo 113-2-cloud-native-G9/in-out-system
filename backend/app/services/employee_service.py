@@ -1,4 +1,5 @@
 from app.models.employee_model import EmployeeModel
+from app.models.organization_model import OrganizationModel
 from app.models import db  # Import the db object
 from datetime import datetime  # Import datetime for timestamps
 
@@ -40,6 +41,25 @@ class EmployeeService:
             return None
         
     @staticmethod
+    def get_all_employees():
+        try:
+            employees = EmployeeModel.query.all()
+
+            return { 
+                'employee_list': [
+                    {
+                        'employee_id': emp.employee_id,
+                        'employee_first_name': emp.first_name,
+                        'employee_last_name': emp.last_name,
+                    }
+                    for emp in employees
+                ]
+            }
+        except Exception as e:
+            # Log the error (assuming you have a logging system)
+            print(f"Database error while fetching all employees: {str(e)}")
+
+    @staticmethod
     def update_employee(employee):
         try:
             db.session.commit()
@@ -52,7 +72,14 @@ class EmployeeService:
     def add_employee(data, created_by):
         if EmployeeModel.query.filter_by(employee_id=data.get('employee_id')).first():
             raise ValueError("The employee already exists")
-
+        
+        organization_id = data.get('organization_id')
+        if not organization_id:
+            raise ValueError("Missing organization_id")
+        
+        if not OrganizationModel.query.filter_by(organization_id=organization_id).first():
+            raise ValueError(f"Organization with id {organization_id} does not exist")
+        
         employee = EmployeeModel(
             employee_id=data.get('employee_id'),
             first_name=data.get('first_name'),
@@ -102,17 +129,13 @@ class EmployeeService:
             raise e
         
     @staticmethod
-    def reset_password(current_user, employee_id, original_hashed_password, new_hashed_password):
+    def reset_password(employee_id, original_hashed_password, new_hashed_password):
         if not original_hashed_password or not new_hashed_password:
             raise ValueError("Both original and new passwords are required.")
 
         employee = EmployeeModel.query.filter_by(employee_id=employee_id).first()
         if not employee:
             raise ValueError("Employee not found.")
-
-        is_admin = current_user["is_admin"]
-        if not is_admin and employee.employee_id != current_user["employee_id"]:
-            raise PermissionError("Access denied. You can only reset your own password.")
 
         if employee.hashed_password != original_hashed_password:
             raise PermissionError("Original password is incorrect.")

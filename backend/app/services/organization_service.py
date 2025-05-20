@@ -1,5 +1,6 @@
 from app.models.organization_model import OrganizationModel
 from app.models.employee_model import EmployeeModel
+from app.models import db
 
 class OrganizationService:
     @staticmethod  #不用建立class實體也可以直接呼叫函式
@@ -79,6 +80,7 @@ class OrganizationService:
                 "manager_id": org.manager_id,
                 "manager_first_name": "",
                 "manager_last_name": "",
+                "employee_count": "0",  #新增的，預設員工數量為0
                 "children": []
             }
 
@@ -94,6 +96,12 @@ class OrganizationService:
                 org_data["manager_first_name"] = manager.first_name
                 org_data["manager_last_name"] = manager.last_name
 
+        #新增的4.5. 計算每個組織的員工數量
+        for org in org_dict.values():
+            #查詢該組織的員工數量
+            employees = EmployeeModel.query.filter_by(organization_id=org["organization_id"]).all()
+            org["employee_count"] = str(len(employees))
+
         # 5. 把所有組織串成樹狀結構
         root_orgs = []
         for org in org_dict.values():
@@ -106,4 +114,34 @@ class OrganizationService:
                 org_dict[parent_id]["children"].append(org)
 
         # 6. 回傳 JSON 格式
-        return {"organizations": root_orgs}, 200 
+        return {"organizations": root_orgs}, 200
+    
+    @staticmethod
+    def delete_organization(organization_id):
+        # 1. 查詢該組織是否存在
+        org = OrganizationModel.query.filter_by(organization_id=organization_id).first()
+        if not org:
+            return {"error": "Organization not found."}, 404
+
+        # 2. 檢查是否為 leaf 組織
+        has_children = OrganizationModel.query.filter_by(parent_department_id=organization_id).first()
+        if has_children:
+            return {"error": "Cannot delete non-leaf organization node."}, 400
+
+        # 3. 查出所有要被刪除的員工
+        employees = EmployeeModel.query.filter_by(organization_id=organization_id).all()
+        employee_ids = [emp.employee_id for emp in employees]
+
+        # 4. 把其他部門用到這些員工當 manager_id 的清空掉
+        OrganizationModel.query.filter(OrganizationModel.manager_id.in_(employee_ids))\
+            .update({OrganizationModel.manager_id: None}, synchronize_session=False)
+
+        # 5. 刪除這些員工
+        for emp in employees:
+            db.session.delete(emp)
+
+        # 6. 刪除組織
+        db.session.delete(org)
+        db.session.commit()
+
+        return {"message": "Organization and related employees deleted successfully."}, 200
