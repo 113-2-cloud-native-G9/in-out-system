@@ -114,6 +114,11 @@ def test_get_attendance_by_employee_success(client):
     assert "records" in data
     assert isinstance(data["records"], list)
 
+    if data["records"]:
+        record = data["records"][0]
+        assert isinstance(record["check_in_gate"], str)  # ✅ 改：驗證 gate_name 是字串
+        assert isinstance(record["check_out_gate"], str)
+
 
 # 測試 GET /api/v1/attendance/organizations/<organization_id>
 # 🔧 新版 API：加入 month=YYYY-MM 查詢參數
@@ -219,3 +224,7 @@ def test_get_attendance_by_organization_success(client):
     matched_emp = next((emp for emp in data if emp["employee_id"] == "E101"), None)
     assert matched_emp is not None
     assert len(matched_emp["records"]) >= 1
+
+    first_record = matched_emp["records"][0]
+    assert isinstance(first_record["check_in_gate"], str)  # ✅ 加入 gate_name 檢查
+    assert isinstance(first_record["check_out_gate"], str)

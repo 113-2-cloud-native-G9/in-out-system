@@ -7,6 +7,7 @@ from app.models.accesslog_model import AccessLogModel
 from sqlalchemy import func
 from app.models.employee_model import EmployeeModel
 from app.models.organization_model import OrganizationModel
+from sqlalchemy.orm import aliased
 
 def update_attendance_service():
     
@@ -130,6 +131,7 @@ def update_attendance_service():
     return {"message": f"✅ Attendance updated for {target_date}", "total": len(all_employees)}, 200
 
 #取得當前登入員工的出勤紀錄
+#修改：gate改成gate_name
 class AttendanceService:
     @staticmethod
     def get_attendance_by_employee(employee_id, month):
@@ -148,52 +150,60 @@ class AttendanceService:
         # 查詢員工所屬組織
         organization = OrganizationModel.query.filter_by(organization_id=employee.organization_id).first()
 
+        # 🆕 aliased join GateModel for in/out
+        in_gate = aliased(GateModel)
+        out_gate = aliased(GateModel)
+
         # 查詢員工在該月的出勤紀錄
-        attendance_records = AttendanceRecordModel.query.filter(
-            AttendanceRecordModel.employee_id == employee_id,
-            AttendanceRecordModel.report_date >= start_date,
-            AttendanceRecordModel.report_date < end_date
-        ).all()
+        attendance_records = (
+            db.session.query(
+                AttendanceRecordModel,
+                in_gate.gate_name.label("in_gate_name"),   # 🆕
+                out_gate.gate_name.label("out_gate_name")  # 🆕
+            )
+            .outerjoin(in_gate, AttendanceRecordModel.check_in_gate == in_gate.gate_id)   # 🆕
+            .outerjoin(out_gate, AttendanceRecordModel.check_out_gate == out_gate.gate_id) # 🆕
+            .filter(
+                AttendanceRecordModel.employee_id == employee_id,
+                AttendanceRecordModel.report_date >= start_date,
+                AttendanceRecordModel.report_date < end_date
+            )
+            .all()
+        )
 
         # 整理出勤紀錄
         records = []
-        for record in attendance_records:
-            # 判斷遲到和早退的邏輯
+        for record, in_gate_name, out_gate_name in attendance_records:  # ✨ 解包
             late_arrival_status = "On time"
             late_arrival_minutes = 0
             early_departure_status = "On time"
             early_departure_minutes = 0
 
-            # 設定上班時間為 08:00 AM 和下班時間為 05:00 PM
             work_start_time = record.check_in_time.replace(hour=8, minute=30, second=0, microsecond=0) if record.check_in_time else None
             work_end_time = record.check_out_time.replace(hour=17, minute=30, second=0, microsecond=0) if record.check_out_time else None
 
-            # 遲到判斷
             if record.check_in_time and work_start_time and record.check_in_time > work_start_time:
                 late_arrival_status = "Late"
                 late_arrival_minutes = int((record.check_in_time - work_start_time).total_seconds() / 60)
 
-            # 早退判斷
             if record.check_out_time and work_end_time and record.check_out_time < work_end_time:
                 early_departure_status = "Early"
                 early_departure_minutes = int((work_end_time - record.check_out_time).total_seconds() / 60)
 
-            # 添加到結果列表
             records.append({
                 "record_id": record.record_id,
                 "report_date": record.report_date.strftime("%Y-%m-%d"),
                 "check_in_time": record.check_in_time.strftime("%H:%M") if record.check_in_time else None,
                 "check_out_time": record.check_out_time.strftime("%H:%M") if record.check_out_time else None,
-                "check_in_gate": record.check_in_gate,
-                "check_out_gate": record.check_out_gate,
-                "total_stay_hours": float(record.total_stay_hours) if record.total_stay_hours else 0.0,  # 確保轉換為 float
+                "check_in_gate": in_gate_name,   # ✨ 改用 gate name
+                "check_out_gate": out_gate_name, # ✨ 改用 gate name
+                "total_stay_hours": float(record.total_stay_hours or 0),
                 "late_arrival_status": late_arrival_status,
                 "late_arrival_minutes": late_arrival_minutes,
                 "early_departure_status": early_departure_status,
                 "early_departure_minutes": early_departure_minutes
             })
 
-        # 整理最終返回的資料
         response = {
             "employee_id": employee.employee_id,
             "employee_name": f"{employee.first_name} {employee.last_name}",
@@ -206,39 +216,49 @@ class AttendanceService:
 
     #取得組織出勤紀錄
     #新版本：改成回傳month的出席紀錄
+    #修改：gate改成gate_name
     @staticmethod
     def get_attendance_by_organization(organization_id, month):
-        # ✅ 新增：月份參數
         try:
             start_date = datetime.strptime(month, "%Y-%m")
             end_date = datetime(start_date.year, start_date.month + 1, 1)
         except ValueError:
             return {"error": "Invalid month format, use YYYY-MM"}, 400
 
-        # 查詢組織內所有員工
         employees = EmployeeModel.query.filter_by(organization_id=organization_id).all()
         if not employees:
-            return [], 200  # ✅ 改：沒有員工也回傳空陣列，而不是 404
+            return [], 200
+
+        in_gate = aliased(GateModel)
+        out_gate = aliased(GateModel)
 
         organization_records = []
 
         for employee in employees:
-            # ✅ 修改：加上月份條件
-            attendance_records = AttendanceRecordModel.query.filter(
-                AttendanceRecordModel.employee_id == employee.employee_id,
-                AttendanceRecordModel.report_date >= start_date,
-                AttendanceRecordModel.report_date < end_date
-            ).order_by(AttendanceRecordModel.report_date.desc()).all()
+            attendance_records = (
+                db.session.query(
+                    AttendanceRecordModel,
+                    in_gate.gate_name.label("in_gate_name"),
+                    out_gate.gate_name.label("out_gate_name")
+                )
+                .outerjoin(in_gate, AttendanceRecordModel.check_in_gate == in_gate.gate_id)
+                .outerjoin(out_gate, AttendanceRecordModel.check_out_gate == out_gate.gate_id)
+                .filter(
+                    AttendanceRecordModel.employee_id == employee.employee_id,
+                    AttendanceRecordModel.report_date >= start_date,
+                    AttendanceRecordModel.report_date < end_date
+                )
+                .order_by(AttendanceRecordModel.report_date.desc())
+                .all()
+            )
 
             records = []
-            for record in attendance_records:
-                # 遲到與早退預設值
+            for record, in_gate_name, out_gate_name in attendance_records:
                 late_arrival_status = "On time"
                 late_arrival_minutes = 0
                 early_departure_status = "On time"
                 early_departure_minutes = 0
 
-                # 計算遲到
                 if record.check_in_time:
                     work_start = record.check_in_time.replace(hour=8, minute=30, second=0, microsecond=0)
                     if record.check_in_time > work_start:
@@ -246,7 +266,6 @@ class AttendanceService:
                         late_arrival_status = "Late"
                         late_arrival_minutes = int(delta.total_seconds() / 60)
 
-                # 計算早退
                 if record.check_out_time:
                     work_end = record.check_out_time.replace(hour=17, minute=30, second=0, microsecond=0)
                     if record.check_out_time < work_end:
@@ -259,8 +278,8 @@ class AttendanceService:
                     "report_date": record.report_date.strftime("%Y-%m-%d"),
                     "check_in_time": record.check_in_time.strftime("%H:%M") if record.check_in_time else None,
                     "check_out_time": record.check_out_time.strftime("%H:%M") if record.check_out_time else None,
-                    "check_in_gate": record.check_in_gate,
-                    "check_out_gate": record.check_out_gate,
+                    "check_in_gate": in_gate_name,   # ✨ 改
+                    "check_out_gate": out_gate_name, # ✨ 改
                     "total_stay_hours": float(record.total_stay_hours or 0),
                     "late_arrival_status": late_arrival_status,
                     "late_arrival_minutes": late_arrival_minutes,
