@@ -66,13 +66,21 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { usePersonalAttendanceRecords } from "@/hooks/queries";
 
+const calcOverWork = (record: AttendanceRecord) => {
+    const checkOut = new Date(record.report_date + " " + record.check_out_time); // 轉換為 Date 物件
+    const benchmark = new Date(checkOut); // 複製同一天日期
+    benchmark.setHours(17, 30, 0, 0); // 設定到 17:30:00.000
+    const diffMs = checkOut.getTime() - benchmark.getTime(); // 計算毫秒差
+    const diffHours = Math.max(0, diffMs / (1000 * 60 * 60)); // 計算分鐘差
+    return diffHours;
+};
+
 const AttendancePage = () => {
     const [monthFilter, setMonthFilter] = useState<string>(
         `${new Date().getFullYear()}-${String(
             new Date().getMonth() + 1
         ).padStart(2, "0")}`
     );
-    const [statusFilter, setStatusFilter] = useState<string>("All");
 
     // 使用 mock 資料
     // const attendanceData = mockAttendance.records;
@@ -96,27 +104,11 @@ const AttendancePage = () => {
                 lateMinutes: 0,
                 earlyDepartures: 0,
                 earlyMinutes: 0,
+                overWorkTime: 0,
+                overWorkHours: 0,
             };
         return attendanceData.reduce(
             (acc: AttendanceStatistics, record: AttendanceRecord) => {
-                // 過濾狀態
-                if (statusFilter !== "All") {
-                    const isLate =
-                        record.late_arrival_status === LateArrivalStatus.Late;
-                    const isEarly =
-                        record.early_departure_status ===
-                        EarlyDepartureStatus.Early;
-                    const isOnTime = !isLate && !isEarly;
-
-                    if (
-                        (statusFilter === "Late" && !isLate) ||
-                        (statusFilter === "Early departure" && !isEarly) ||
-                        (statusFilter === "On time" && !isOnTime)
-                    ) {
-                        return acc;
-                    }
-                }
-
                 acc.totalAttendance++;
                 acc.totalWorkHour += record.total_stay_hours;
 
@@ -132,6 +124,11 @@ const AttendancePage = () => {
                     acc.earlyMinutes += record.early_departure_minutes;
                 }
 
+                if (record.check_out_time > "17:30:00") {
+                    acc.overWorkTime++;
+                    acc.overWorkHours += calcOverWork(record);
+                }
+
                 return acc;
             },
             {
@@ -141,30 +138,11 @@ const AttendancePage = () => {
                 lateMinutes: 0,
                 earlyDepartures: 0,
                 earlyMinutes: 0,
+                overWorkTime: 0,
+                overWorkHours: 0,
             }
         );
-    }, [attendanceData, statusFilter]);
-
-    // 過濾資料
-    const filteredData = useMemo(() => {
-        if (!attendanceData) return [];
-        return attendanceData.filter((record: AttendanceRecord) => {
-            // 過濾狀態
-            if (statusFilter === "All") return true;
-
-            const isLate =
-                record.late_arrival_status === LateArrivalStatus.Late;
-            const isEarly =
-                record.early_departure_status === EarlyDepartureStatus.Early;
-            const isOnTime = !isLate && !isEarly;
-
-            return (
-                (statusFilter === "Late" && isLate) ||
-                (statusFilter === "Early departure" && isEarly) ||
-                (statusFilter === "On time" && isOnTime)
-            );
-        });
-    }, [attendanceData, statusFilter]);
+    }, [attendanceData]);
 
     // 載入狀態處理
     if (isLoadingRecords) {
@@ -228,30 +206,12 @@ const AttendancePage = () => {
                             })}
                         </SelectContent>
                     </Select>
-                    {/* 狀態篩選器 */}
-                    <Select
-                        value={statusFilter}
-                        onValueChange={(value) => setStatusFilter(value)}
-                    >
-                        <SelectTrigger className="w-32">
-                            <SelectValue>
-                                {statusFilter?.toString() || "Filter by status"}
-                            </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                            {Object.values(AttendanceStatus).map((status) => (
-                                <SelectItem key={status} value={status}>
-                                    {status}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
                 </div>
             </div>
 
             {/* 優化後統計卡片區塊 */}
             <Separator />
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                 <StatCard
                     title="Attendance Days"
                     value={statistics.totalAttendance}
@@ -284,11 +244,21 @@ const AttendancePage = () => {
                     suffix=" times"
                     description={`Total early minutes: ${statistics.earlyMinutes}`}
                 />
+                <StatCard
+                    title="Overwork"
+                    value={statistics.overWorkTime}
+                    icon={<ClockAlert />}
+                    color="default"
+                    suffix=" times"
+                    description={`Total overtime hours: ${statistics.overWorkHours.toFixed(
+                        2
+                    )}`}
+                />
             </div>
 
             {/* 出勤圖表與月曆區塊 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AttendanceChart data={filteredData} />
+                <AttendanceChart data={attendanceData || []} />
                 <Card className="w-full">
                     <CardHeader className="flex flex-row items-center gap-2 pb-2">
                         <Calendar className="text-blue-600" />
@@ -455,11 +425,8 @@ const AttendancePage = () => {
             </div>
 
             {/* 出勤記錄表格（Gate 欄位） */}
-            <div
-                className="flex gap-8 border rounded-md"
-                style={{ maxHeight: "calc(100vh - 30rem)" }}
-            >
-                <AttendanceTable data={filteredData} />
+            <div className="flex gap-8 border rounded-md">
+                <AttendanceTable data={attendanceData || []} />
             </div>
         </div>
     );
@@ -598,8 +565,9 @@ const AttendanceTable = ({ data }: { data: Array<AttendanceRecord> }) => {
 
 const chartColors = {
     Work: "#2563eb", // blue-600
-    Late: "#f59e42", // amber-500
-    Early: "#ef4444", // red-500
+    Late: "#ef4444", // amber-500
+    Early: "#f59e42", // red-500
+    OverWork: "#8b5cf6", // purple-500
 };
 
 const CustomLegend = (props: any) => (
@@ -614,6 +582,8 @@ const CustomLegend = (props: any) => (
                     ? "Work Hours"
                     : entry.value === "Late"
                     ? "Late Minutes"
+                    : entry.value === "OverWork"
+                    ? "Over Work"
                     : "Early Minutes"}
             </span>
         ))}
@@ -634,7 +604,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                         {item.name === "Work" ? "Work" : item.name}:
                     </span>
                     <span>
-                        {item.dataKey === "Work"
+                        {item.dataKey === "Work" || item.dataKey === "OverWork"
                             ? `${item.value} hrs`
                             : `${item.value} min`}
                     </span>
@@ -652,8 +622,11 @@ const AttendanceChart = ({ data }: { data: Array<AttendanceRecord> }) => {
             Work: record.total_stay_hours,
             Late: record.late_arrival_minutes,
             Early: record.early_departure_minutes,
+            OverWork: calcOverWork(record),
         }))
         .sort((a, b) => a.date - b.date);
+
+    console.log("chartData", chartData);
 
     return (
         <Card className="w-full">
@@ -735,6 +708,13 @@ const AttendanceChart = ({ data }: { data: Array<AttendanceRecord> }) => {
                                 name="Early"
                                 fill={chartColors.Early}
                                 stackId="a"
+                                radius={[4, 4, 0, 0]}
+                            />
+                            <Bar
+                                yAxisId="left"
+                                dataKey="OverWork"
+                                name="OverWork"
+                                fill={chartColors.OverWork}
                                 radius={[4, 4, 0, 0]}
                             />
                         </BarChart>

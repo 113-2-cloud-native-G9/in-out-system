@@ -18,7 +18,7 @@ function AppContent() {
                 className={
                     isLoginPage
                         ? "flex items-center justify-center"
-                        : "container mx-auto p-4 overflow-y-auto md:max-h-[calc(100dvh-5rem)]"
+                        : "container mx-auto p-4 overflow-y-auto overflow-x-hidden max-h-[calc(100dvh-5rem)] md:max-h-[calc(100dvh-5rem)]"
                 }
             >
                 <Routes>

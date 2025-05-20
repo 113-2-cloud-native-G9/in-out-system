@@ -71,7 +71,7 @@ export const usePersonalAttendance = (month?: string) => {
 // 獲取單位下的員工考勤紀錄
 export const useOrganizationAttendanceRecords = (
     organizationId: string,
-    month?: string
+    month: string
 ) => {
     return useQuery({
         queryKey: attendanceKeys.employeeRecords(organizationId, month),

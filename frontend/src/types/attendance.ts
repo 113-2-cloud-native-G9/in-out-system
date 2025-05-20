@@ -1,4 +1,4 @@
-import { LateArrivalStatus, EarlyDepartureStatus } from './enums';
+import { LateArrivalStatus, EarlyDepartureStatus } from "./enums";
 
 export interface AttendanceRecord {
     record_id: string;
@@ -28,4 +28,6 @@ export interface AttendanceStatistics {
     lateMinutes: number;
     earlyDepartures: number;
     earlyMinutes: number;
+    overWorkHours: number;
+    overWorkTime: number;
 }

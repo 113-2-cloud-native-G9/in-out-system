@@ -41,7 +41,7 @@ const DashboardPage = () => {
         data: attendances,
         isLoading: isLoadingAttendance,
         isError: isErrorAttendance,
-    } = useOrganizationAttendanceRecords(user?.organization_id || "");
+    } = useOrganizationAttendanceRecords(organizationFilter, monthFilter);
     const { data: organizations } = useOrganizationList();
 
     const overview = useMemo(() => {
@@ -263,10 +263,12 @@ const DashboardPage = () => {
                     value={organizationFilter}
                     onValueChange={(value) => setOrganizationFilter(value)}
                 >
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className="w-44">
                         <SelectValue>
-                            {organizationFilter?.toString() ||
-                                "Filter by status"}
+                            {organizations?.find(
+                                (org) =>
+                                    org.organization_id === organizationFilter
+                            )?.organization_name || "All Organizations"}
                         </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
@@ -359,7 +361,7 @@ const DashboardPage = () => {
                         <Card>
                             <CardHeader>Low Attendance (&lt;70%)</CardHeader>
                             <CardContent>
-                                <ul className="list-disc list-inside text-sm text-muted-foreground">
+                                <ul className="list-disc list-inside text-sm text-muted-foreground max-h-54 overflow-y-auto">
                                     {exceptions.lowAttendanceEmployees.length >
                                     0 ? (
                                         exceptions.lowAttendanceEmployees.map(
@@ -376,7 +378,7 @@ const DashboardPage = () => {
             </div>
 
             {/* 趨勢與圖表區 */}
-            <div className="mt-8">
+            <div className="mt-8 px-1 space-y-4">
                 <h2 className="text-2xl font-bold">Trend & Chart Overview</h2>
                 <Card>
                     <CardHeader>Daily Attendance</CardHeader>
@@ -451,6 +453,23 @@ const DashboardPage = () => {
                                 />
                             </BarChart>
                         </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* 員工列表 */}
+            <div className="mt-8 px-1 space-y-4">
+                <h2 className="text-2xl font-bold">Employee List</h2>
+                <Card>
+                    <CardContent>
+                        <ul className="list-disc list-inside text-sm text-muted-foreground max-h-54 overflow-y-auto">
+                            {attendances &&
+                                attendances.map((emp) => (
+                                    <li key={emp.employee_id}>
+                                        {emp.employee_name}
+                                    </li>
+                                ))}
+                        </ul>
                     </CardContent>
                 </Card>
             </div>
