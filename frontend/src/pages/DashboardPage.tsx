@@ -1,7 +1,7 @@
 import { mockEmployeesAttendance } from "@/mocks/employeeAttendance";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { EmployeeAttendance } from "@/types/attendance"
+import { EmployeeAttendance } from "@/types/attendance";
 import {
     LineChart,
     Line,
@@ -14,15 +14,47 @@ import {
     Bar,
     Legend,
 } from "recharts";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { useUser } from "@/providers/authProvider";
+import { useOrganizationAttendanceRecords } from "@/hooks/queries/useAttendance";
+import { useOrganizationList } from "@/hooks/queries/useOrganization";
+import { Loader2 } from "lucide-react";
 
 const DashboardPage = () => {
-    const [attendances, setAttendances] = useState<Array<EmployeeAttendance>>(
-        mockEmployeesAttendance
+    const { user } = useUser();
+    const [monthFilter, setMonthFilter] = useState<string>(
+        `${new Date().getFullYear()}-${String(
+            new Date().getMonth() + 1
+        ).padStart(2, "0")}`
+    );
+    const [organizationFilter, setOrganizationFilter] = useState<string>(
+        user?.organization_id || ""
     );
 
+    const {
+        data: attendances,
+        isLoading: isLoadingAttendance,
+        isError: isErrorAttendance,
+    } = useOrganizationAttendanceRecords(user?.organization_id || "");
+    const { data: organizations } = useOrganizationList();
+
     const overview = useMemo(() => {
+        if (!attendances)
+            return {
+                totalEmployees: 0,
+                totalWorkDays: 0,
+                avgAttendanceRate: "0.0%",
+                avgLateEarlyPerPerson: "0.00",
+                totalLateEarly: 0,
+                absentCount: 0,
+            };
         const totalEmployees = attendances.length;
-        const allDates = new Set<string>();
         const weekendDays = [0, 6]; // Sunday = 0, Saturday = 6
         const lateCount = attendances.flatMap((e) =>
             e.records.filter((r) => r.late_arrival_minutes !== 0)
@@ -79,11 +111,18 @@ const DashboardPage = () => {
     }, [attendances]);
 
     const exceptions = useMemo(() => {
+        if (!attendances)
+            return {
+                topLateEmployees: [],
+                topEarlyEmployees: [],
+                lowAttendanceEmployees: [],
+            };
         const topLateEmployees = attendances
             .map((emp) => ({
                 name: emp.employee_name,
-                count: emp.records.filter((r) => r.late_arrival_status === "Y")
-                    .length,
+                count: emp.records.filter(
+                    (r) => r.late_arrival_status === "Late"
+                ).length,
             }))
             .sort((a, b) => b.count - a.count)
             .slice(0, 5);
@@ -92,7 +131,7 @@ const DashboardPage = () => {
             .map((emp) => ({
                 name: emp.employee_name,
                 count: emp.records.filter(
-                    (r) => r.early_departure_status === "Y"
+                    (r) => r.early_departure_status === "Early"
                 ).length,
             }))
             .sort((a, b) => b.count - a.count)
@@ -120,6 +159,7 @@ const DashboardPage = () => {
             { name: string; totalLateMinutes: number }
         > = {};
 
+        if (!attendances) return { dailyTrend: [], lateMinuteList: [] };
         attendances.forEach((emp) => {
             let lateTotal = 0;
             let lateCount = 0;
@@ -135,13 +175,13 @@ const DashboardPage = () => {
                     };
                 }
                 dailyMap[r.report_date].present++;
-                if (r.late_arrival_status === "Y")
+                if (r.late_arrival_status === "Late")
                     dailyMap[r.report_date].late++;
-                if (r.early_departure_status === "Y")
+                if (r.early_departure_status === "Early")
                     dailyMap[r.report_date].early++;
 
                 // 平均遲到分鐘統計
-                if (r.late_arrival_status === "Y") {
+                if (r.late_arrival_status === "Late") {
                     lateTotal += r.late_arrival_minutes;
                     lateCount++;
                 }
@@ -166,9 +206,81 @@ const DashboardPage = () => {
         };
     }, [attendances]);
 
+    // 載入狀態處理
+    if (isLoadingAttendance) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <Loader2 className="animate-spin" size={32} />
+                <span className="ml-2">Loading...</span>
+            </div>
+        );
+    }
+
+    // 錯誤處理
+    if (isErrorAttendance) {
+        return (
+            <div className="text-center text-red-500">
+                Failed to load attendance data. Please try again later.
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6 overflow-y-auto h-[calc(100vh-8rem)]">
             <h1 className="text-3xl font-bold">Company Dashboard</h1>
+
+            <div className="flex gap-3 items-center">
+                {/* 月份篩選器 */}
+                <Select
+                    value={monthFilter}
+                    onValueChange={(value) => setMonthFilter(value)}
+                >
+                    <SelectTrigger className="w-40">
+                        <SelectValue>{monthFilter}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                        {Array.from({ length: 12 }, (_, i) => {
+                            const year = new Date().getFullYear();
+                            const month = i + 1;
+                            const value = `${year}-${String(month).padStart(
+                                2,
+                                "0"
+                            )}`;
+                            const label = new Date(year, i).toLocaleString(
+                                "default",
+                                { month: "long", year: "numeric" }
+                            );
+                            return (
+                                <SelectItem key={value} value={value}>
+                                    {label}
+                                </SelectItem>
+                            );
+                        })}
+                    </SelectContent>
+                </Select>
+                {/* 組織篩選器 */}
+                <Select
+                    value={organizationFilter}
+                    onValueChange={(value) => setOrganizationFilter(value)}
+                >
+                    <SelectTrigger className="w-32">
+                        <SelectValue>
+                            {organizationFilter?.toString() ||
+                                "Filter by status"}
+                        </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                        {organizations?.map((org) => (
+                            <SelectItem
+                                key={org.organization_id}
+                                value={org.organization_id}
+                            >
+                                {org.organization_name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* 概覽區 */}
