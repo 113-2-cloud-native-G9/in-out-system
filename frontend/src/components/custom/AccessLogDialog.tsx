@@ -1,4 +1,4 @@
-import React, { JSX, useState, useMemo, useCallback } from "react";
+import React, { JSX, useState, useMemo } from "react";
 import {
     Dialog,
     DialogContent,
@@ -14,7 +14,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { mockAccessLogs } from "@/mocks/accesslog"; // 臨時導入模擬數據
 import { AccessLog } from "@/types/accesslog";
 import { usePersonalAccessLogs } from "@/hooks/queries/useAccessLog";
 import {
@@ -26,17 +25,15 @@ import {
     LogIn,
     Calendar,
     Loader2,
-    AlertCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface AccessLogDialogProps {
     children: React.ReactNode;
     date: string;
-    userID?: string | number;
 }
 
-const AccessLogDialog = ({ children, date, userID }: AccessLogDialogProps) => {
+const AccessLogDialog = ({ children, date }: AccessLogDialogProps) => {
     // 對話框開啟狀態
     const [open, setOpen] = useState(false);
 

@@ -1,33 +1,16 @@
-import { JSX, useEffect, useState, useMemo } from "react";
-import {
-    EarlyDepartureStatus,
-    LateArrivalStatus,
-    AttendanceStatus,
-} from "@/types";
-import { mockAttendance } from "@/mocks/attendance";
+import { useState, useMemo } from "react";
+import { EarlyDepartureStatus, LateArrivalStatus } from "@/types";
 import { AttendanceRecord, AttendanceStatistics } from "@/types/attendance";
 import {
-    ArrowUpDown,
-    ArrowUp,
     ArrowDown,
     Calendar,
-    DoorClosed,
-    DoorOpen,
-    Briefcase,
     ClockAlert,
     Loader2,
-    Users,
-    User,
     Clock,
     AlertTriangle,
     TrendingUp,
     TrendingDown,
-    Percent,
     UserCheck,
-    UserX,
-    Sun,
-    Moon,
-    LogIn,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -458,7 +441,7 @@ const getStatusIcon = (record: AttendanceRecord) => {
     );
 };
 
-const getStatusForDay = (date: number, data?: AttendanceRecord[]) => {
+export const getStatusForDay = (date: number, data?: AttendanceRecord[]) => {
     if (!data) return "none";
     const rec = data.find((r) => new Date(r.report_date).getDate() === date);
     if (!rec) return "none";
@@ -468,7 +451,11 @@ const getStatusForDay = (date: number, data?: AttendanceRecord[]) => {
     return "onTime";
 };
 
-const AttendanceTable = ({ data }: { data: Array<AttendanceRecord> }) => {
+export const AttendanceTable = ({
+    data,
+}: {
+    data: Array<AttendanceRecord>;
+}) => {
     // 依日期排序
     const sortedData = [...data].sort(
         (a, b) =>
@@ -515,7 +502,6 @@ const AttendanceTable = ({ data }: { data: Array<AttendanceRecord> }) => {
                         <AccessLogDialog
                             key={record.record_id}
                             date={record.report_date}
-                            userID={record.record_id}
                         >
                             <TableRow
                                 key={record.record_id}
@@ -614,7 +600,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     );
 };
 
-const AttendanceChart = ({ data }: { data: Array<AttendanceRecord> }) => {
+export const AttendanceChart = ({
+    data,
+}: {
+    data: Array<AttendanceRecord>;
+}) => {
     // 準備圖表資料
     const chartData = data
         .map((record) => ({
@@ -888,7 +878,7 @@ const colorMap: Record<StatCardColor, string> = {
     default: "text-muted-foreground border-l-muted-foreground bg-muted",
 };
 
-const StatCard: React.FC<StatCardProps> = ({
+export const StatCard: React.FC<StatCardProps> = ({
     title,
     value,
     icon,

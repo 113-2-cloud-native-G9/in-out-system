@@ -44,12 +44,13 @@ export const usePersonalAttendanceRecords = (month?: string) => {
 // 獲取特定員工的考勤記錄
 export const useEmployeeAttendanceRecords = (
     employeeId: string,
-    month?: string
+    month: string,
+    enabled: boolean = true
 ) => {
     return useQuery({
         queryKey: attendanceKeys.employeeRecords(employeeId, month),
         queryFn: () => attendanceApi.getEmployeeAttendance(employeeId, month),
-        enabled: !!employeeId,
+        enabled: enabled && !!employeeId && !!month,
     });
 };
 

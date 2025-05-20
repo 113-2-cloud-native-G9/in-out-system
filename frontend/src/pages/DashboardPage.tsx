@@ -1,7 +1,5 @@
-import { mockEmployeesAttendance } from "@/mocks/employeeAttendance";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { EmployeeAttendance } from "@/types/attendance";
 import {
     LineChart,
     Line,
@@ -25,6 +23,7 @@ import { useUser } from "@/providers/authProvider";
 import { useOrganizationAttendanceRecords } from "@/hooks/queries/useAttendance";
 import { useOrganizationList } from "@/hooks/queries/useOrganization";
 import { Loader2 } from "lucide-react";
+import { AttendanceDialog } from "@/components/custom/AttendenceDialog";
 
 const DashboardPage = () => {
     const { user } = useUser();
@@ -462,12 +461,23 @@ const DashboardPage = () => {
                 <h2 className="text-2xl font-bold">Employee List</h2>
                 <Card>
                     <CardContent>
-                        <ul className="list-disc list-inside text-sm text-muted-foreground max-h-54 overflow-y-auto">
+                        <ul className="list-disc list-inside text-sm text-muted-foreground max-h-54 overflow-y-auto space-y-2">
                             {attendances &&
                                 attendances.map((emp) => (
-                                    <li key={emp.employee_id}>
-                                        {emp.employee_name}
-                                    </li>
+                                    <AttendanceDialog
+                                        key={emp.employee_id}
+                                        employeeId={emp.employee_id}
+                                        employeeName={emp.employee_name}
+                                        records={emp.records}
+                                        monthFilter={monthFilter}
+                                    >
+                                        <li
+                                            key={emp.employee_id}
+                                            className="cursor-pointer hover:text-blue-700 dark:hover:text-blue-300"
+                                        >
+                                            {emp.employee_name}
+                                        </li>
+                                    </AttendanceDialog>
                                 ))}
                         </ul>
                     </CardContent>
