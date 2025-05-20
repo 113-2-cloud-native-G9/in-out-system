@@ -116,6 +116,7 @@ def test_get_attendance_by_employee_success(client):
 
 
 # 測試 GET /api/v1/attendance/organizations/<organization_id>
+# 🔧 新版 API：加入 month=YYYY-MM 查詢參數
 def test_get_attendance_by_organization_success(client):
     with client.application.app_context():
         # 1. 建立 Gate（in/out 各一個）
@@ -183,6 +184,7 @@ def test_get_attendance_by_organization_success(client):
         db.session.add_all([emp1, emp2])
         db.session.commit()
 
+        month = datetime.now().strftime("%Y-%m")
         # 4. 插入 access log（注意：naive datetime 才會被 update_attendance_service() 抓到）
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         checkin_time = today + timedelta(hours=8, minutes=5)
@@ -207,7 +209,7 @@ def test_get_attendance_by_organization_success(client):
 
     # 7. 呼叫 API 拿 ORGX 出勤資料
     headers = {"Authorization": f"Bearer {jwt_token}"}
-    res = client.get("/api/v1/attendance/organizations/ORGX", headers=headers)
+    res = client.get(f"/api/v1/attendance/organizations/ORGX?month={month}", headers=headers)
     assert res.status_code == 200
 
     data = res.get_json()
