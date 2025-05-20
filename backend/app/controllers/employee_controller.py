@@ -101,7 +101,7 @@ class ResetPasswordResource(Resource):
 
         employee = EmployeeService.get_employee_by_id(employee_id)
         if not employee:
-            return {"message": "Employee not found"}, 400
+            return {"message": "Employee not found."}, 400
         
         data = request.get_json()
         try:
