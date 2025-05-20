@@ -38,12 +38,12 @@ class EmployeeListResource(Resource):
         if not (is_admin):
             return {'message': 'Access denied. Only admins can view this information.'}, 403
         
-        employee_list = EmployeeService.get_all_employees()
+        data = EmployeeService.get_all_employees() # json
         
-        if not employee_list:
+        if not data or not data.get("employee_list"):
             return {'message': 'No employees found'}, 404
         
-        return employee_list, 200
+        return data, 200
 
 # post /api/v1/employees
 class EmployeeAddingResource(Resource):
