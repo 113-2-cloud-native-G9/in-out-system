@@ -3,15 +3,22 @@ import random
 import base64
 import json
 import time
-import requests
 from datetime import datetime, timedelta
+from google.cloud import pubsub_v1
 
+# ===== 基本設定 =====
 NUM_EMPLOYEES = 50
 EMPLOYEE_IDS = [f"EMP{str(i).zfill(5)}" for i in range(1, NUM_EMPLOYEES + 1)]
 GATE_IN_IDS = [1, 3, 5, 7]
 GATE_OUT_IDS = [2, 4, 6]
-FLASK_ENDPOINT = "http://localhost:8080/api/v1/pubsub/access-logs"
 
+PROJECT_ID = "causal-port-454215-g1"
+TOPIC_ID = "in-out-system-pubsub"
+
+publisher = pubsub_v1.PublisherClient()
+topic_path = publisher.topic_path(PROJECT_ID, TOPIC_ID)
+
+# ===== 模擬分布函數 =====
 def generate_minutes(start_time, end_time):
     return [start_time + timedelta(minutes=i) for i in range(int((end_time - start_time).total_seconds() // 60))]
 
@@ -44,26 +51,22 @@ def get_workdays(start_date, end_date):
     days = []
     current = start_date
     while current <= end_date:
-        if current.weekday() < 5:  # 0-4 = Mon-Fri
+        if current.weekday() < 5:  # Mon–Fri
             days.append(current.date())
         current += timedelta(days=1)
     return days
 
-def post_to_flask_api(data_dict):
+# ===== 發送到 Pub/Sub =====
+def publish_to_pubsub(data_dict):
     json_str = json.dumps(data_dict)
-    encoded = base64.b64encode(json_str.encode("utf-8")).decode("utf-8")
-    envelope = {"message": {"data": encoded}}
-    try:
-        response = requests.post(FLASK_ENDPOINT, json=envelope)
-        if response.status_code not in [200, 201]:
-            print(f"⚠️ 發送失敗：{response.status_code} | {response.text}")
-        else:
-            print(f"✅ 已送出：{data_dict['employee_id']} @ {data_dict['access_time']}")
-    except Exception as e:
-        print(f"❌ 發送錯誤：{e}")
+    json_bytes = json_str.encode("utf-8")
+    future = publisher.publish(topic_path, data=json_bytes)
+    message_id = future.result()
+    print(f"✅ 發送成功：{data_dict['employee_id']} @ {data_dict['access_time']} | msgID: {message_id}")
 
-start_date = datetime(2025, 5, 26)
-end_date = datetime(2025, 6, 6)
+# ===== 主程式 =====
+start_date = datetime(2025, 5, 1)
+end_date = datetime(2025, 5, 18)
 workdays = get_workdays(start_date, end_date)
 
 print(f"📅 產生日期：{workdays}")
@@ -82,7 +85,7 @@ for day in workdays:
             "access_time": checkin_dt.isoformat(),
             "gate_id": gate_in
         }
-        post_to_flask_api(data_in)
+        publish_to_pubsub(data_in)
         time.sleep(0.003)
 
         checkout_dt = datetime.combine(day, checkout_times[i].time())
@@ -92,9 +95,9 @@ for day in workdays:
             "access_time": checkout_dt.isoformat(),
             "gate_id": gate_out
         }
-        post_to_flask_api(data_out)
+        publish_to_pubsub(data_out)
         time.sleep(0.003)
 
         total_sent += 2
 
-print(f"🎉 完成！總共送出 {total_sent} 筆資料。")
+print(f"🎉 完成！總共送出 {total_sent} 筆資料到 Pub/Sub。")
