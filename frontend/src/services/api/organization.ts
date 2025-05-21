@@ -3,6 +3,17 @@ import { Organization } from '@/types';
 
 const BASE_API = '/api/v1';
 
+interface Employee {
+  employee_id: string,
+  employee_first_name: string,
+  employee_last_name: string,
+  job_title: string,
+  hire_status: string,
+  email: string,
+  phone_number: string,
+  hire_date: string
+}
+
 interface OrganizationListResponse {
   organization: Organization[];
 }
@@ -13,6 +24,18 @@ interface OrganizationTreeResponse {
 
 interface UpdateOrganizationTreeRequest {
   organizations: Organization[];
+}
+
+export interface OrganizationDetail {
+  organization_id: string,
+  organization_name: string,
+  parent_organization_id: string,
+  parent_organization_name: string,
+  manager_id: string,
+  manager_first_name: string,
+  manager_last_name: string,
+  employee_count: number,
+  employee_list: Employee[]
 }
 
 export const organizationApi = {
@@ -35,9 +58,9 @@ export const organizationApi = {
   },
 
   // 獲取單一組織資訊 - GET /api/v1/organizations/{organization_id}
-  getOrganization: async (organizationId: string): Promise<Organization> => {
+  getOrganization: async (organizationId: string): Promise<OrganizationDetail> => {
     try {
-      const response = await fetchWithJwt<Organization>(`${BASE_API}/organizations/${organizationId}`, HttpMethod.GET);
+      const response = await fetchWithJwt<OrganizationDetail>(`${BASE_API}/organizations/${organizationId}`, HttpMethod.GET);
       console.log(`Organization ${organizationId} API response:`, response);
       return response;
     } catch (error) {
@@ -51,7 +74,7 @@ export const organizationApi = {
     try {
       const response = await fetchWithJwt<OrganizationTreeResponse>(`${BASE_API}/organizations`, HttpMethod.GET);
       console.log('Organization tree API response:', response);
-      
+
       // 解構出 organizations 陣列
       return response.organizations || [];
     } catch (error) {

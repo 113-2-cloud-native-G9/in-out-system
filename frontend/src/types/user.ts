@@ -11,6 +11,6 @@ export interface User {
     job_title: string;
     organization_id: string;
     organization_name: string;
-    hire_status: "active" | "inactive" | "onleave";
+    hire_status: "Active" | "Inactive" | "Onleave";
     hire_date: string;
 }

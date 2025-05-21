@@ -64,7 +64,7 @@ const EditEmployeeDialog = ({
         is_admin: false,
         job_title: "",
         organization_id: "",
-        hire_status: "active" as "active" | "inactive" | "onleave",
+        hire_status: "Active" as "Active" | "Inactive" | "Onleave",
         hire_date: "",
     });
 
@@ -118,7 +118,7 @@ const EditEmployeeDialog = ({
                     is_admin: false,
                     job_title: "",
                     organization_id: "",
-                    hire_status: "active",
+                    hire_status: "Active",
                     hire_date: "",
                 });
             }
@@ -393,20 +393,20 @@ const EditEmployeeDialog = ({
                             <Select
                                 value={formData.hire_status}
                                 onValueChange={(
-                                    value: "active" | "inactive" | "onleave"
+                                    value: "Active" | "Inactive" | "Onleave"
                                 ) => handleChange("hire_status", value)}
                             >
                                 <SelectTrigger className="border-foreground/50">
                                     <SelectValue placeholder="Select Hire Status" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-background">
-                                    <SelectItem value="active">
+                                    <SelectItem value="Active">
                                         Active
                                     </SelectItem>
-                                    <SelectItem value="inactive">
+                                    <SelectItem value="Inactive">
                                         Inactive
                                     </SelectItem>
-                                    <SelectItem value="onleave">
+                                    <SelectItem value="Onleave">
                                         On Leave
                                     </SelectItem>
                                 </SelectContent>
