@@ -37,6 +37,20 @@ interface EditEmployeeDialogProps {
     onSubmit?: (formData: any) => void; // Optional callback for form submission
 }
 
+// 首字母大寫轉換函數
+const capitalizeFirstLetter = (string: string): string => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+// 將字串轉換為標準格式（小寫）
+const standardizeStatus = (status: string): "active" | "inactive" | "onleave" => {
+    const lowerStatus = status.toLowerCase();
+    if (lowerStatus === "active" || lowerStatus === "inactive" || lowerStatus === "onleave") {
+        return lowerStatus as "active" | "inactive" | "onleave";
+    }
+    return "active"; // 默認值
+};
+
 const hashPassword = async (password: string): Promise<string> => {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
@@ -54,6 +68,7 @@ const EditEmployeeDialog = ({
     employeeData,
     onSubmit,
 }: EditEmployeeDialogProps) => {
+    // 使用首字母大寫格式
     const [formData, setFormData] = useState({
         employee_id: "",
         hashed_password: "",
@@ -64,6 +79,7 @@ const EditEmployeeDialog = ({
         is_admin: false,
         job_title: "",
         organization_id: "",
+        organization_name: "",
         hire_status: "Active" as "Active" | "Inactive" | "Onleave",
         hire_date: "",
     });
@@ -88,22 +104,29 @@ const EditEmployeeDialog = ({
         }
     }, [organizations, organizationsSuccess]);
 
-    
+    // 設置表單數據
     useEffect(() => {
         const updateFormData = async () => {
             if (editType === "update" && employeeData) {
+                console.log("Setting form data for employee:", employeeData);
+                
+                // 取得標準化的狀態（小寫）
+                const standardStatus = standardizeStatus(employeeData.hire_status || "active");
+                
+                // 設置表單數據，首字母大寫
                 setFormData({
-                    employee_id: employeeData.employee_id,
+                    employee_id: employeeData.employee_id || "",
                     hashed_password: "",
-                    first_name: employeeData.first_name,
-                    last_name: employeeData.last_name,
-                    email: employeeData.email,
-                    phone_number: employeeData.phone_number,
-                    is_admin: employeeData.is_admin,
-                    job_title: employeeData.job_title,
-                    organization_id: employeeData.organization_id,
-                    hire_status: employeeData.hire_status,
-                    hire_date: employeeData.hire_date,
+                    first_name: employeeData.first_name || "",
+                    last_name: employeeData.last_name || "",
+                    email: employeeData.email || "",
+                    phone_number: employeeData.phone_number || "",
+                    is_admin: employeeData.is_admin || false,
+                    job_title: employeeData.job_title || "",
+                    organization_id: employeeData.organization_id || "",
+                    organization_name: employeeData.organization_name || "",
+                    hire_status: capitalizeFirstLetter(standardStatus) as "Active" | "Inactive" | "Onleave",
+                    hire_date: employeeData.hire_date || "",
                 });
             } else if (editType === "create") {
                 const password = "0000";
@@ -118,14 +141,17 @@ const EditEmployeeDialog = ({
                     is_admin: false,
                     job_title: "",
                     organization_id: "",
+                    organization_name: "",
                     hire_status: "Active",
                     hire_date: "",
                 });
             }
         };
 
-        updateFormData(); // Call the async function to update the form data
-    }, [editType, employeeData]);
+        if (open) {
+            updateFormData(); // 只有在對話框打開時更新表單數據
+        }
+    }, [editType, employeeData, open]);
 
     const handleChange = <K extends keyof typeof formData>(
         field: K,
@@ -135,11 +161,28 @@ const EditEmployeeDialog = ({
             ...prev,
             [field]: value,
         }));
+
+        // 如果更改了組織 ID，同時更新組織名稱
+        if (field === 'organization_id') {
+            const selectedOrg = organizationList.find(org => org.organization_id === value);
+            if (selectedOrg) {
+                setFormData(prev => ({
+                    ...prev,
+                    organization_name: selectedOrg.organization_name
+                }));
+            }
+        }
     };
 
     const handleSubmit = () => {
         if (onSubmit) {
-            onSubmit(formData);
+            // 在提交前將首字母大寫的狀態轉換為小寫，以符合 API 格式
+            const submittedData = {
+                ...formData,
+                hire_status: standardizeStatus(formData.hire_status)
+            };
+            
+            onSubmit(submittedData);
             setOpen(false); 
         }
     };
@@ -342,7 +385,6 @@ const EditEmployeeDialog = ({
                                                     key={org.organization_id}
                                                     value={org.organization_id}
                                                 >
-                                                    {org.organization_id} -{" "}
                                                     {org.organization_name}
                                                 </SelectItem>
                                             ))

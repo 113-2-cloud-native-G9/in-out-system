@@ -70,7 +70,7 @@ export function OrganizationGraph({ data }: { data: Organization[] }) {
       attributes: {
         ID: node.organization_id,
         Manager: `${node.manager_first_name} ${node.manager_last_name}`,
-        employeeCount: Math.floor(Math.random() * 50) + 10, // 模擬員工數量
+        employeeCount: node.employee_count,
         status: "active", // 模擬狀態
       },
       children: convertToTree(node.children),

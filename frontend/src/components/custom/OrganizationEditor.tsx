@@ -11,7 +11,6 @@ import {
     User
 } from "lucide-react";
 import { Organization } from "@/types";
-import { useEmployeeList } from "@/hooks/queries/useEmployee";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,30 +18,16 @@ import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 interface OrganizationEditorProps {
-    data: Organization[];
+    orgData: Organization[];
+    employeeData: any[]
     onChange: (data: Organization[]) => void;
     onError?: (msg: string) => void; // ✅ 新增錯誤 callback
 }
 
-export function OrganizationEditor({ data, onChange, onError }: OrganizationEditorProps) {
+export function OrganizationEditor({ orgData, employeeData, onChange, onError }: OrganizationEditorProps) {
     const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<{ organization_name?: string; parent_organization_id?: string | null; manager_id?: string }>({ organization_name: "", parent_organization_id: null, manager_id: "" });
-    // 為了確保至少有測試數據，設置初始值
-    const [employees, setEmployees] = useState<Array<{ employee_id: string; first_name: string; last_name: string }>>([{
-        employee_id: 'E001',
-        first_name: 'John',
-        last_name: 'Doe'
-    }, {
-        employee_id: 'E002',
-        first_name: 'Jane',
-        last_name: 'Smith'
-    }, {
-        employee_id: 'E003',
-        first_name: 'Robert',
-        last_name: 'Johnson'
-    }]);
-    const { data: employeeList, isLoading: isLoadingEmployees } = useEmployeeList();
     const [searchQuery, setSearchQuery] = useState("");
     const [addSearchQuery, setAddSearchQuery] = useState("");
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -82,30 +67,13 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
         };
     }, []);
 
-    // 從 React Query 獲取員工列表
-    useEffect(() => {
-
-        if (employeeList && Array.isArray(employeeList)) {
-
-            try {
-                const formattedList = employeeList.map(emp => ({
-                    employee_id: emp.employee_id || '',
-                    first_name: emp.first_name || '',
-                    last_name: emp.last_name || ''
-                }));
-
-                setEmployees(formattedList);
-            } catch (error) {
-                console.error('Error formatting employee list:', error);
-            }
-        }
-    }, [employeeList, isLoadingEmployees]);
+    
 
     // 過濾員工列表基於編輯搜索查詢
     const filteredEmployees = useMemo(() => {
         const results = (!searchQuery || searchQuery.trim() === '')
-            ? employees
-            : employees.filter(emp =>
+            ? employeeData
+            : employeeData.filter(emp =>
                 emp.employee_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 emp.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 emp.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -114,15 +82,15 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
 
         console.log('Filtered employees for search query:', searchQuery, results);
         return results;
-    }, [employees, searchQuery]);
+    }, [employeeData, searchQuery]);
 
 
 
     // 過濾員工列表基於新增搜索查詢
     const filteredAddEmployees = useMemo(() => {
         const results = (!addSearchQuery || addSearchQuery.trim() === '')
-            ? employees
-            : employees.filter(emp =>
+            ? employeeData
+            : employeeData.filter(emp =>
                 emp.employee_id.toLowerCase().includes(addSearchQuery.toLowerCase()) ||
                 emp.first_name.toLowerCase().includes(addSearchQuery.toLowerCase()) ||
                 emp.last_name.toLowerCase().includes(addSearchQuery.toLowerCase()) ||
@@ -131,7 +99,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
 
         console.log('Filtered employees for add search query:', addSearchQuery, results);
         return results;
-    }, [employees, addSearchQuery]);
+    }, [employeeData, addSearchQuery]);
 
     // 清理新增部門表單
     const clearNewOrgForm = () => {
@@ -149,8 +117,8 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
     const organizationList = useMemo(() => {
         const flatten = (nodes: Organization[]): Organization[] =>
             nodes.flatMap((node) => [node, ...flatten(node.children || [])]);
-        return flatten(data);
-    }, [data]);
+        return flatten(orgData);
+    }, [orgData]);
 
     // 過濾父部門列表
     const filteredParentOrgs = useMemo(() => {
@@ -170,7 +138,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
     };
 
     const handleAdd = () => {
-
+        console.log(employeeData)
         onError?.("");
 
         if (
@@ -183,7 +151,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
         }
 
         // 找到管理者的全名
-        const selectedManager = employees.find(emp => emp.employee_id === newOrgForm.manager_id);
+        const selectedManager = employeeData.find(emp => emp.employee_id === newOrgForm.manager_id);
 
         const collectAllIds = (nodes: Organization[]): string[] =>
             nodes.flatMap((node) => [
@@ -191,7 +159,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
                 ...collectAllIds(node.children),
             ]);
 
-        const allIds = collectAllIds(data);
+        const allIds = collectAllIds(orgData);
         const maxOrgNum = allIds.reduce((max, id) => {
             const match = id.match(/^ORG(\d{2,})$/);
             if (match) {
@@ -210,6 +178,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
             manager_id: newOrgForm.manager_id,
             manager_first_name: selectedManager?.first_name || "",
             manager_last_name: selectedManager?.last_name || "",
+            employee_count: 1,
             children: [],
         };
 
@@ -233,7 +202,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
             });
         };
 
-        const updated = insertToParent(data, newOrg.parent_organization_id);
+        const updated = insertToParent(orgData, newOrg.parent_organization_id);
         onChange(updated);
 
         clearNewOrgForm(); // 清理表單和搜索狀態
@@ -272,7 +241,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
             });
 
             // 存儲當前的 manager
-            const manager = employees.find(emp => emp.employee_id === safeOrg.manager_id);
+            const manager = employeeData.find(emp => emp.employee_id === safeOrg.manager_id);
             // 在畫面上顯示目前的經理姓名
             if (manager) {
                 // 不設置搜尋框文字，只保留照常顯示經理
@@ -330,7 +299,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
             };
 
             // Simple in-place update
-            const updatedTree = updateInPlace(data);
+            const updatedTree = updateInPlace(orgData);
             onChange(updatedTree);
 
             clearEditForm();
@@ -350,7 +319,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
                     children: deleteRecursive(n.children),
                 }));
 
-        onChange(deleteRecursive(data));
+        onChange(deleteRecursive(orgData));
     };
 
     // 安全地渲染每個行，確保不會因為無效數據而崩潰
@@ -445,11 +414,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
 
                                     {dropdownOpen && (
                                         <div className="absolute z-50 mt-1 w-full bg-background rounded-md shadow-lg border border-border overflow-auto max-h-40">
-                                            {isLoadingEmployees ? (
-                                                <div className="p-2 text-center text-muted-foreground">
-                                                    Loading...
-                                                </div>
-                                            ) : filteredEmployees && filteredEmployees.length > 0 ? (
+                                            { filteredEmployees && filteredEmployees.length > 0 ? (
                                                 filteredEmployees.map((emp) => (
                                                     <div
                                                         key={emp.employee_id}
@@ -700,11 +665,7 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
 
                                     {addDropdownOpen && (
                                         <div className="absolute z-50 mt-1 w-full bg-background rounded-md shadow-lg border border-border overflow-auto max-h-40">
-                                            {isLoadingEmployees ? (
-                                                <div className="p-2 text-center text-muted-foreground">
-                                                    Loading...
-                                                </div>
-                                            ) : filteredAddEmployees.length > 0 ? (
+                                            {filteredAddEmployees.length > 0 ? (
                                                 filteredAddEmployees.map((emp) => (
                                                     <div
                                                         key={emp.employee_id}
@@ -759,8 +720,8 @@ export function OrganizationEditor({ data, onChange, onError }: OrganizationEdit
                 </div>
 
                 <div className="max-h-[500px] overflow-y-auto">
-                    {data && Array.isArray(data) && data.length > 0 ? (
-                        renderTree(data)
+                    {orgData && Array.isArray(orgData) && orgData.length > 0 ? (
+                        renderTree(orgData)
                     ) : (
                         <div className="p-4 text-center text-muted-foreground">
                             No organizations found. Add a new department to get started.

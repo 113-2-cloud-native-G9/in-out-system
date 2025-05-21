@@ -16,6 +16,7 @@ export const useEmployeeList = () => {
   return useQuery({
     queryKey: employeeKeys.lists(),
     queryFn: () => employeeApi.getEmployeeList(),
+    select: (data) => data.employee_list || [],
     staleTime: 5 * 60 * 1000, // 5 分鐘
   });
 };

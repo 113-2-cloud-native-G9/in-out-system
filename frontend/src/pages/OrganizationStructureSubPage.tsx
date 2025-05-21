@@ -3,6 +3,7 @@ import { OrganizationEditor } from "@/components/custom/OrganizationEditor";
 import { OrganizationGraph } from "@/components/custom/OrganizationGraph";
 import { Button } from "@/components/ui/button";
 import { useOrganizationTree, useUpdateOrganizationTree } from "@/hooks/queries/useOrganization";
+import { useEmployeeList } from "@/hooks/queries/useEmployee";
 import { Organization } from "@/types";
 import {
     Loader2,
@@ -20,6 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 const OrganizationStructurePage = () => {
     // 使用 React Query hook 獲取組織結構
     const { data: initialData, isLoading, error, refetch } = useOrganizationTree();
+    const { data: employeeList, isLoading: isLoadingEmployees } = useEmployeeList();
 
     // Debug logging
     console.log('Organization Tree Page Debug:', {
@@ -31,6 +33,7 @@ const OrganizationStructurePage = () => {
     });
 
     const [organizationData, setOrganizationData] = useState<Organization[]>([]);
+    const [employeeData, setEmployeeData] = useState<any[]>([]);
     const [hasChanges, setHasChanges] = useState(false);
     const [activeView, setActiveView] = useState<'editor' | 'graph'>('graph');
     const [editorError, setEditorError] = useState("");
@@ -59,6 +62,26 @@ const OrganizationStructurePage = () => {
         }
     }, [initialData, isLoading]);
 
+    useEffect(() => {
+        console.log(employeeList);
+        if (employeeList && Array.isArray(employeeList)) {
+            
+            try {
+                const formattedList = employeeList.map(emp => ({
+                    employee_id: emp.employee_id || '',
+                    first_name: emp.employee_first_name || '',
+                    last_name: emp.employee_last_name || ''
+                }));
+
+                setEmployeeData(formattedList);
+            } catch (error) {
+                console.error('Error formatting employee list:', error);
+            }
+        }
+    }, [employeeList, isLoadingEmployees]);
+
+
+
     const handleRefresh = async () => {
         try {
             setIsRefreshing(true);
@@ -76,16 +99,16 @@ const OrganizationStructurePage = () => {
             // 清除任何之前的預釋或成功訊息
             setEditorError("");
             setSuccessMessage("");
-            
+
             console.log("Uploading organization structure...", organizationData);
-            
+
             // 使用 mutateAsync 呼叫 API
             await updateOrganizationTreeMutation.mutateAsync(organizationData);
-            
+
             console.log("Organization structure updated successfully");
             setSuccessMessage("Organization structure updated successfully!");
             setHasChanges(false);
-            
+
             // 5秒後隐藏成功訊息
             setTimeout(() => {
                 setSuccessMessage("");
@@ -218,7 +241,7 @@ const OrganizationStructurePage = () => {
                                     <AlertDescription>{editorError}</AlertDescription>
                                 </Alert>
                             )}
-                            
+
                             {successMessage && (
                                 <Alert variant="default" className="mb-4 bg-green-50 border-green-500 text-green-800">
                                     <div className="flex items-center">
@@ -229,7 +252,8 @@ const OrganizationStructurePage = () => {
                                 </Alert>
                             )}
                             <OrganizationEditor
-                                data={organizationData}
+                                orgData={organizationData}
+                                employeeData={employeeData}
                                 onChange={(updated) => {
                                     setOrganizationData(updated);
                                     setHasChanges(true);

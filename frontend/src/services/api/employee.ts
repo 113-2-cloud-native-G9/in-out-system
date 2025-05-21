@@ -23,8 +23,8 @@ export interface EmployeeUpdateData extends Partial<EmployeeCreateData> {
 
 export const employeeApi = {
   // 獲取所有員工列表 - GET /api/v1/employee-list
-  getEmployeeList: async (): Promise<User[]> => {
-    return await fetchWithJwt<User[]>(`${BASE_API}/employee-list`, HttpMethod.GET);
+  getEmployeeList: async (): Promise<{ employee_list: any[] }> => {
+    return await fetchWithJwt<{ employee_list: any[] }>(`${BASE_API}/employee-list`, HttpMethod.GET);
   },
 
   // 獲取單一員工資訊 - GET /api/v1/employees/{employee_id}

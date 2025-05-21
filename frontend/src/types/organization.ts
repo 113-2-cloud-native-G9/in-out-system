@@ -5,6 +5,7 @@ export interface Organization {
     manager_id: string;
     manager_first_name?: string;
     manager_last_name?: string;
+    employee_count: number;
     children: Organization[];
 }
 
