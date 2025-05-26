@@ -74,10 +74,17 @@ export const useOrganizationAttendanceRecords = (
     organizationId: string,
     month: string
 ) => {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(
+        now.getMonth() + 1
+    ).padStart(2, "0")}`;
+    const isCurrentMonth = month === currentMonth;
+
     return useQuery({
         queryKey: attendanceKeys.employeeRecords(organizationId, month),
         queryFn: () =>
             attendanceApi.getOrganizationAttendance(organizationId, month),
         enabled: !!organizationId,
+        refetchInterval: isCurrentMonth ? 300000 : false, // 每五分鐘刷新（若是當月）
     });
 };
