@@ -37,7 +37,7 @@ The **Yoyo Clock In/Out System** leverages access logs from office gates, parkin
 
 ### 🏗️ System Architecture
 
-![System Architecture](ReadmeFile\System Architecture.png) 
+![System Architecture](https://github.com/113-2-cloud-native-G9/in-out-system/blob/main/ReadmeFile/System%20Architecture.png) 
 
 ---
 
