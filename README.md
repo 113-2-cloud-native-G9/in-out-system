@@ -15,7 +15,7 @@
 
 ---
 
-## 👥 Group 9
+## 👥 Group Members
 
 <div align="center">
 
@@ -112,9 +112,6 @@ graph LR
     D --> E[Build Docker]
     E --> F[Deploy]
 ```
-
-**Frontend Pipeline**: Setup → Install → Test → Auth → Build → Deploy
-**Backend Pipeline**: Setup → Install → Create .env → Test → Auth → Deploy
 
 ---
 
