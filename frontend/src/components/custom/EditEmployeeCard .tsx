@@ -42,14 +42,7 @@ const capitalizeFirstLetter = (string: string): string => {
     return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
-// 將字串轉換為標準格式（小寫）
-const standardizeStatus = (status: string): "active" | "inactive" | "onleave" => {
-    const lowerStatus = status.toLowerCase();
-    if (lowerStatus === "active" || lowerStatus === "inactive" || lowerStatus === "onleave") {
-        return lowerStatus as "active" | "inactive" | "onleave";
-    }
-    return "active"; // 默認值
-};
+
 
 const hashPassword = async (password: string): Promise<string> => {
     const encoder = new TextEncoder();
@@ -110,9 +103,6 @@ const EditEmployeeDialog = ({
             if (editType === "update" && employeeData) {
                 console.log("Setting form data for employee:", employeeData);
                 
-                // 取得標準化的狀態（小寫）
-                const standardStatus = standardizeStatus(employeeData.hire_status || "active");
-                
                 // 設置表單數據，首字母大寫
                 setFormData({
                     employee_id: employeeData.employee_id || "",
@@ -125,7 +115,7 @@ const EditEmployeeDialog = ({
                     job_title: employeeData.job_title || "",
                     organization_id: employeeData.organization_id || "",
                     organization_name: employeeData.organization_name || "",
-                    hire_status: capitalizeFirstLetter(standardStatus) as "Active" | "Inactive" | "Onleave",
+                    hire_status: "Active" as "Active" | "Inactive" | "Onleave",
                     hire_date: employeeData.hire_date || "",
                 });
             } else if (editType === "create") {
@@ -176,13 +166,8 @@ const EditEmployeeDialog = ({
 
     const handleSubmit = () => {
         if (onSubmit) {
-            // 在提交前將首字母大寫的狀態轉換為小寫，以符合 API 格式
-            const submittedData = {
-                ...formData,
-                hire_status: standardizeStatus(formData.hire_status)
-            };
             
-            onSubmit(submittedData);
+            onSubmit(formData);
             setOpen(false); 
         }
     };
