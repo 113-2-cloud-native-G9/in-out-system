@@ -30,7 +30,7 @@ const initialUserState: UserState = {
     authState: "loading"
 };
 
-const UserContext = createContext<UserState>(initialUserState);
+export const UserContext = createContext<UserState>(initialUserState);
 
 interface UserProviderProps {
     children: ReactNode;
@@ -97,7 +97,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
                     organization_name: response.organization_name,
                     is_manager: Boolean(decoded.sub.is_manager),
                     is_admin: Boolean(decoded.sub.is_admin),
-                    hire_status: decoded.sub.hire_status as "active" | "inactive" | "onleave",
+                    hire_status: decoded.sub.hire_status as "Active" | "Inactive" | "Onleave",
                     hire_date: decoded.sub.hire_date
                 };
 

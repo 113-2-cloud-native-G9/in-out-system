@@ -1,4 +1,4 @@
-import React, { JSX, use, useEffect, useState } from "react";
+import React, { JSX, useState, useMemo } from "react";
 import {
     Dialog,
     DialogContent,
@@ -14,8 +14,8 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { AccessLog } from "@/types";
-import { mockAccessLogs } from "@/mocks/accesslog";
+import { AccessLog } from "@/types/accesslog";
+import { usePersonalAccessLogs } from "@/hooks/queries/useAccessLog";
 import {
     ArrowUpDown,
     ArrowUp,
@@ -23,41 +23,61 @@ import {
     Clock,
     DoorOpen,
     LogIn,
+    Calendar,
+    Loader2,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface AccessLogDialogProps {
     children: React.ReactNode;
     date: string;
-    userID: number;
 }
 
-const AccessLogDialog = ({ children, date, userID }: AccessLogDialogProps) => {
-    const [logs, setLogs] = React.useState<AccessLog[]>([]);
+const AccessLogDialog = ({ children, date }: AccessLogDialogProps) => {
+    // 對話框開啟狀態
+    const [open, setOpen] = useState(false);
+
+    // 數據和載入狀態
+    const { data: logs, isLoading, refetch } = usePersonalAccessLogs(date);
+
+    // 排序狀態
     const [sortField, setSortField] = useState<keyof AccessLog | null>(null);
     const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(
         null
     );
-    const [displayedData, setDisplayedData] = useState<AccessLog[]>([]);
 
-    useEffect(() => {
-        console.log(date, userID);
-        setLogs(mockAccessLogs);
-    }, [date, userID]);
+    // 當對話框打開時，獲取數據
+    const handleOpenChange = (newOpen: boolean) => {
+        setOpen(newOpen);
 
-    useEffect(() => {
-        if (sortField) {
-            const sortedData = [...logs].sort((a, b) => {
-                let aValue = a[sortField];
-                let bValue = b[sortField];
+        // 當對話框打開時，獲取數據
+        if (newOpen) {
+            // 重新使用usePersonalAccessLogs
+            refetch();
+        }
+    };
 
-                // Handle time fields (HH:mm:ss)
+    // 使用 useMemo 處理排序
+    const displayedData = useMemo(() => {
+        // 如果沒有數據，則返回空數組
+        if (!logs) {
+            return [];
+        }
+
+        if (sortField && sortDirection) {
+            return [...logs].sort((a, b) => {
+                // 獲取屬性值，確保不為 undefined
+                let aValue = a[sortField] || "";
+                let bValue = b[sortField] || "";
+
+                // 處理時間欄位 (HH:mm:ss)
                 if (
                     typeof aValue === "string" &&
                     aValue.includes(":") &&
                     typeof bValue === "string" &&
                     bValue.includes(":")
                 ) {
-                    // Convert time to seconds for comparison (HH:mm:ss)
+                    // 將時間轉換為秒數進行比較 (HH:mm:ss)
                     const aTimeInSeconds = aValue
                         .split(":")
                         .reduce((acc, time) => acc * 60 + parseInt(time), 0);
@@ -73,27 +93,32 @@ const AccessLogDialog = ({ children, date, userID }: AccessLogDialogProps) => {
                     aValue = aTimeInSeconds;
                     bValue = bTimeInSeconds;
                 }
-                // Handle date fields (ISO 8601)
+                // 處理日期欄位 (ISO 8601)
                 else if (
                     typeof aValue === "string" &&
-                    !isNaN(Date.parse(aValue))
+                    !isNaN(Date.parse(aValue)) &&
+                    typeof bValue === "string" &&
+                    !isNaN(Date.parse(bValue))
                 ) {
-                    aValue = new Date(aValue).getTime(); // Convert to timestamp
-                    bValue = new Date(bValue).getTime(); // Convert to timestamp
+                    aValue = new Date(aValue).getTime(); // 轉換為時間戳
+                    bValue = new Date(bValue).getTime(); // 轉換為時間戳
                 }
 
-                // Compare values
+                // 確保比較值不為 undefined
+                aValue = aValue ?? "";
+                bValue = bValue ?? "";
+
+                // 比較值
                 if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
                 if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
                 return 0;
             });
-            setDisplayedData(sortedData);
-        } else {
-            setDisplayedData(logs);
         }
-    }, [sortField, sortDirection, logs]);
 
-    // Handle sorting logic
+        return logs;
+    }, [logs, sortField, sortDirection]);
+
+    // 處理排序邏輯
     const handleSort = (field: keyof AccessLog): void => {
         if (sortField === field) {
             if (sortDirection === "asc") {
@@ -110,7 +135,7 @@ const AccessLogDialog = ({ children, date, userID }: AccessLogDialogProps) => {
         }
     };
 
-    // Function to render sort icon
+    // 渲染排序圖標的函數
     const renderSortIcon = (field: keyof AccessLog): JSX.Element | null => {
         if (sortField !== field) {
             return <ArrowUpDown size={14} className="ml-1 opacity-50" />;
@@ -128,74 +153,154 @@ const AccessLogDialog = ({ children, date, userID }: AccessLogDialogProps) => {
     };
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="md:min-w-[50rem] min-h-[20rem]">
-                <DialogHeader>
-                    <DialogTitle>
-                        {new Date(date).toLocaleDateString() + " "}Access Logs
-                    </DialogTitle>
-                </DialogHeader>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead
-                                className="px-4 py-2 cursor-pointer w-32"
-                                onClick={() => handleSort("access_time")}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <Clock size={16} />
-                                    Time
-                                    {renderSortIcon("access_time")}
-                                </div>
-                            </TableHead>
-                            <TableHead
-                                className="px-4 py-2 cursor-pointer w-36"
-                                onClick={() => handleSort("direction")}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <ArrowUpDown size={16} />
-                                    Direction
-                                    {renderSortIcon("direction")}
-                                </div>
-                            </TableHead>
-                            <TableHead
-                                className="px-4 py-2 cursor-pointer w-64"
-                                onClick={() => handleSort("gate_name")}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <DoorOpen size={16} />
-                                    Gate Name
-                                    {renderSortIcon("gate_name")}
-                                </div>
-                            </TableHead>
-                            <TableHead
-                                className="px-4 py-2 cursor-pointer"
-                                onClick={() => handleSort("gate_type")}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <LogIn size={16} />
-                                    Gate Type
-                                    {renderSortIcon("gate_type")}
-                                </div>
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {displayedData.map((log) => (
-                            <TableRow key={log.log_id}>
-                                <TableCell>
-                                    {new Date(
-                                        log.access_time
-                                    ).toLocaleTimeString()}
-                                </TableCell>
-                                <TableCell>{log.direction}</TableCell>
-                                <TableCell>{log.gate_name}</TableCell>
-                                <TableCell>{log.gate_type}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center h-full py-10">
+                        <Loader2
+                            size={36}
+                            className="animate-spin text-blue-500 mb-4"
+                        />
+                        <p className="text-lg text-muted-foreground">
+                            Loading access logs...
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <DialogHeader className="pb-4">
+                            <div className="flex items-center justify-between">
+                                <DialogTitle className="flex items-center gap-2">
+                                    <Calendar className="h-5 w-5 text-blue-600" />
+                                    <span>
+                                        {new Date(date).toLocaleDateString(
+                                            undefined,
+                                            {
+                                                weekday: "long",
+                                                year: "numeric",
+                                                month: "long",
+                                                day: "numeric",
+                                            }
+                                        )}
+                                    </span>
+                                </DialogTitle>
+                            </div>
+                        </DialogHeader>
+                        <div className="overflow-y-auto max-h-[60vh]">
+                            <Table>
+                                <TableHeader className="sticky top-0 bg-card z-10">
+                                    <TableRow>
+                                        <TableHead
+                                            className="px-4 py-2 cursor-pointer w-32"
+                                            onClick={() =>
+                                                handleSort("access_time")
+                                            }
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <Clock
+                                                    size={16}
+                                                    className="text-blue-600"
+                                                />
+                                                Time
+                                                {renderSortIcon("access_time")}
+                                            </div>
+                                        </TableHead>
+                                        <TableHead
+                                            className="px-4 py-2 cursor-pointer w-36"
+                                            onClick={() =>
+                                                handleSort("direction")
+                                            }
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <ArrowUpDown
+                                                    size={16}
+                                                    className="text-purple-600"
+                                                />
+                                                Direction
+                                                {renderSortIcon("direction")}
+                                            </div>
+                                        </TableHead>
+                                        <TableHead
+                                            className="px-4 py-2 cursor-pointer w-64"
+                                            onClick={() =>
+                                                handleSort("gate_name")
+                                            }
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <DoorOpen
+                                                    size={16}
+                                                    className="text-green-600"
+                                                />
+                                                Gate Name
+                                                {renderSortIcon("gate_name")}
+                                            </div>
+                                        </TableHead>
+                                        <TableHead
+                                            className="px-4 py-2 cursor-pointer"
+                                            onClick={() =>
+                                                handleSort("gate_type")
+                                            }
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <LogIn
+                                                    size={16}
+                                                    className="text-amber-600"
+                                                />
+                                                Gate Type
+                                                {renderSortIcon("gate_type")}
+                                            </div>
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {displayedData.length > 0 ? (
+                                        displayedData.map((log) => (
+                                            <TableRow
+                                                key={log.log_id}
+                                                className="hover:bg-blue-50/40"
+                                            >
+                                                <TableCell className="font-mono">
+                                                    {new Date(
+                                                        log.access_time
+                                                    ).toLocaleTimeString()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={`${
+                                                            log.direction ===
+                                                            "in"
+                                                                ? "bg-green-50 text-green-700"
+                                                                : "bg-amber-50 text-amber-700"
+                                                        }`}
+                                                    >
+                                                        {log.direction.toUpperCase()}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {log.gate_name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {log.gate_type}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={4}
+                                                className="text-center py-8 text-muted-foreground"
+                                            >
+                                                No access logs found for this
+                                                date
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </>
+                )}
             </DialogContent>
         </Dialog>
     );

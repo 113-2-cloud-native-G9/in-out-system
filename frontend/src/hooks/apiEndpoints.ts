@@ -1,5 +1,4 @@
-import { baseFetch, fetchWithJwt } from "@/hooks/apiConfig";
-import { HttpMethod } from "@/types/enums";
+import { baseFetch, fetchWithJwt, HttpMethod } from "@/hooks/apiConfig";
 
 
 const API_ENDPOINTS = {
@@ -31,7 +30,7 @@ export const api = {
         job_title: string;       
         organization_id: string;   
         hire_date: string;       
-        hire_status: 'active' | 'inactive' | 'onleave';
+        hire_status: 'Active' | 'Inactive' | 'Onleave';
     }) => {
         return fetchWithJwt(API_ENDPOINTS.CREATE_EMPLOYEE, HttpMethod.POST, data);
     },
@@ -45,7 +44,7 @@ export const api = {
         job_title: string;       
         organization_id: string;   
         hire_date: string;       
-        hire_status: 'active' | 'inactive' | 'onleave';
+        hire_status: 'Active' | 'Inactive' | 'Onleave';
      }) => {
         const url = API_ENDPOINTS.EDIT_EMPLOYEE.replace('{employee_id}', employeeId);
         return fetchWithJwt(url, HttpMethod.PUT, data);
@@ -58,6 +57,3 @@ export const api = {
         return fetchWithJwt(API_ENDPOINTS.RESET_PASSWORD, HttpMethod.POST, data);
     },
 };
-
-
-

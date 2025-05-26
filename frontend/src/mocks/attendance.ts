@@ -1,8 +1,4 @@
-import {
-    EmployeeAttendance,
-    LateArrivalStatus,
-    EarlyDepartureStatus,
-} from "@/types";
+import { LateArrivalStatus, EarlyDepartureStatus } from "@/types";
 
 export const mockAttendance: EmployeeAttendance = {
     employee_id: "E001",
@@ -131,6 +127,32 @@ export const mockAttendance: EmployeeAttendance = {
             check_in_time: "07:50:00", // 時間格式
             check_out_time: "17:20:00", // 時間格式
             check_in_gate: "Gate C",
+            check_out_gate: "Gate B",
+            total_stay_hours: 8.5,
+            late_arrival_status: LateArrivalStatus.OnTime,
+            late_arrival_minutes: 0,
+            early_departure_status: EarlyDepartureStatus.OnTime,
+            early_departure_minutes: 0,
+        },
+        {
+            record_id: 11,
+            report_date: "2025-03-15",
+            check_in_time: "08:05:00", // 時間格式
+            check_out_time: "19:15:00", // 時間格式
+            check_in_gate: "Gate A",
+            check_out_gate: "Gate B",
+            total_stay_hours: 8.17,
+            late_arrival_status: LateArrivalStatus.Late,
+            late_arrival_minutes: 5,
+            early_departure_status: EarlyDepartureStatus.OnTime,
+            early_departure_minutes: 0,
+        },
+        {
+            record_id: 12,
+            report_date: "2025-03-14",
+            check_in_time: "08:00:00", // 時間格式
+            check_out_time: "20:30:00", // 時間格式
+            check_in_gate: "Gate A",
             check_out_gate: "Gate B",
             total_stay_hours: 8.5,
             late_arrival_status: LateArrivalStatus.OnTime,
