@@ -6,6 +6,13 @@ from app.routes import initialize_routes
 from flask_jwt_extended import JWTManager
 from app.create_db import init_db
 from dotenv import load_dotenv
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 def create_app(config_name="development"):
     app = Flask(__name__)
@@ -28,6 +35,7 @@ def create_app(config_name="development"):
 
     @app.route("/")
     def hello():
+        logger.info("Health check endpoint called.")
         return "<h1>THE BACKEND IS RUNNING</h1>"
     
     return app
