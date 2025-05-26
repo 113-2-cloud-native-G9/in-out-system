@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![Yoyo Logo](https://img.shields.io/badge/Yoyo-點點名-blue?style=for-the-badge&logo=checkmarx)
-
 **Track Time. Boost Productivity.**
 
 *A cloud-native employee attendance tracking system built by Group 9*
@@ -17,17 +15,16 @@
 
 ## 👥 Group Members
 
-<div align="center">
 
-| Member | Role | Expertise |
-|--------|------|-----------|
-| 楊喻妃 | PM | Project Management, Frontend |
-| 侯岳昇 | Developer | Backend, DevOps |
-| 洪睿謙 | Developer | Backend, QA |
-| 徐天祐 | Developer | Frontend, DevOps |
-| 陳冠儒 | Developer | Backend, QA |
+| Member | Role | GitHub | Contribution |
+|--------|------|--------|--------------|
+| 楊喻妃 | PM | [![GitHub](https://img.shields.io/badge/GitHub-fly0331-black?style=flat-square&logo=github)](https://github.com/fly0331) | PM & Frontend |
+| 侯岳昇 | Developer | [![GitHub](https://img.shields.io/badge/GitHub-jushengtin2-black?style=flat-square&logo=github)](https://github.com/jushengtin2) | Backend &  DevOps |
+| 洪睿謙 | Developer | [![GitHub](https://img.shields.io/badge/GitHub-PogLotti-black?style=flat-square&logo=github)](https://github.com/PogLotti) | Backend &  QA |
+| 徐天祐 | Developer | [![GitHub](https://img.shields.io/badge/GitHub-Yoyo8787-black?style=flat-square&logo=github)](https://github.com/Yoyo8787) |  Frontend & DevOps |
+| 陳冠儒 | Developer | [![GitHub](https://img.shields.io/badge/GitHub-KJChen3-black?style=flat-square&logo=github)](https://github.com/KJChen3) |  Backend &  QA |
 
-</div>
+
 
 ---
 
@@ -69,7 +66,7 @@ The **Yoyo Clock In/Out System** leverages access logs from office gates, parkin
 
 ## 🏢 User Role Analysis
 
-<div align="center">
+
 
 ### 👤 Employee
 - Clock in/out functionality
@@ -115,7 +112,7 @@ graph LR
 
 ---
 
-<div align="center">
+
 
 **NTU IM 113-2 雲原生應用程式開發**
 
